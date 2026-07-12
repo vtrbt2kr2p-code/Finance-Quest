@@ -1,0 +1,1773 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Finance Quest</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<meta name="theme-color" content="#0E1420">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Finance Quest">
+<style>
+  :root {
+    --bg: #0E1420; --card: #161C29; --card2: #1E2534; --border: #23293A;
+    --text: #EDEBE3; --dim: #8A8FA0; --soft: #B4B8C4; --gold: #D4AF37;
+  }
+  [data-theme="light"] {
+    --bg: #F6F2E7; --card: #FFFFFF; --card2: #F0ECDD; --border: #E4DEC9;
+    --text: #20242C; --dim: #6E7280; --soft: #4B4F58; --gold: #D4AF37;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: #05070C; }
+  body { display: flex; justify-content: center; padding: 20px 10px; min-height: 100vh; }
+  #app {
+    font-family: var(--app-font, 'Georgia','Times New Roman',serif);
+    background: var(--bg); color: var(--text);
+    width: 100%; max-width: 480px; min-height: 640px;
+    border-radius: 18px; overflow: hidden; border: 1px solid var(--border);
+    position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  }
+  button { font-family: inherit; }
+  @keyframes pulse { 0%,100% { opacity:.4 } 50% { opacity:1 } }
+  @keyframes confettiFall { 0% { transform: translateY(0) rotate(0); opacity:1 } 100% { transform: translateY(420px) rotate(360deg); opacity:0 } }
+  .fq-header { padding: 18px 18px 0; border-bottom: 1px solid var(--border); }
+  .fq-header-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; }
+  .fq-brand { display:flex; align-items:center; gap:10px; cursor:pointer; user-select:none; }
+  .fq-brand-mark { width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#D4AF37,#8A6D1E);color:#0E1420;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:16px; }
+  .fq-brand-name { font-size:15px; font-weight:bold; }
+  .fq-brand-sub { font-size:11px; color:var(--dim); font-style:italic; }
+  .fq-header-icons { display:flex; gap:6px; }
+  .fq-icon-btn { width:28px;height:28px;border-radius:8px;background:var(--card2);border:1px solid var(--border);color:var(--dim);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px; }
+  .fq-icon-btn.active { color:var(--gold); border-color:var(--gold); }
+  .fq-nav { display:flex; gap:2px; padding-bottom:8px; overflow-x:auto; }
+  .fq-navbtn { display:flex;align-items:center;gap:4px;background:transparent;border:none;color:var(--dim);font-size:10.5px;padding:6px 8px;border-radius:8px 8px 0 0;cursor:pointer;white-space:nowrap;flex-shrink:0; }
+  .fq-navbtn.active { color: var(--gold); border-bottom:2px solid var(--gold); }
+  .fq-body { padding: 16px 18px; max-height: 560px; overflow-y:auto; }
+  .fq-intro { display:flex; gap:8px; align-items:flex-start; font-size:12px; color:var(--soft); margin-bottom:14px; line-height:1.5; }
+  .fq-card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:16px; }
+  .fq-level { display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid; border-radius:12px; padding:10px 12px; margin-bottom:8px; cursor:pointer; width:100%; text-align:left; }
+  .fq-level[disabled] { opacity:.5; cursor:not-allowed; }
+  .fq-level-num { width:28px;height:28px;border-radius:50%;color:#0E1420;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;flex-shrink:0; }
+  .fq-level-title { font-size:14px; font-weight:bold; }
+  .fq-level-sub { font-size:11px; color:var(--dim); font-style:italic; }
+  .fq-level-score { font-size:11px; font-family:monospace; color:var(--dim); }
+  .fq-btn-primary { display:flex;align-items:center;justify-content:center;gap:6px;width:100%;border:none;color:#0E1420;font-weight:bold;padding:11px;border-radius:10px;margin-top:14px;cursor:pointer;font-size:13px;background:linear-gradient(135deg,#D4AF37,#B8942E); }
+  .fq-btn-secondary { display:flex;align-items:center;justify-content:center;gap:6px;background:transparent;border:1px solid var(--border);color:var(--text);padding:11px;border-radius:10px;cursor:pointer;font-size:13px;flex:1; }
+  .fq-answers { display:flex; flex-direction:column; gap:8px; }
+  .fq-answer { display:flex;justify-content:space-between;align-items:center;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:10px 12px;border-radius:10px;font-size:13px;text-align:left;cursor:pointer; }
+  .fq-answer.correct { background:rgba(138,168,118,0.18); border-color:#8AA876; }
+  .fq-answer.wrong { background:rgba(184,92,92,0.18); border-color:#B85C5C; }
+  .fq-progress-track { height:5px; background:var(--border); border-radius:3px; overflow:hidden; }
+  .fq-progress-fill { height:100%; transition:width .3s ease; }
+  .fq-lives { display:flex; gap:2px; }
+  .fq-input { width:100%; background:var(--card2); border:1px solid var(--border); border-radius:10px; padding:10px 12px; color:var(--text); font-size:13px; margin-bottom:12px; font-family:inherit; }
+  .fq-avatar-row { display:flex; gap:6px; margin-bottom:16px; flex-wrap:wrap; }
+  .fq-avatar-btn { width:38px;height:38px;border-radius:10px;font-size:18px;background:var(--card2);border:1px solid var(--border);cursor:pointer;display:flex;align-items:center;justify-content:center; }
+  .fq-avatar-btn.active { border-color:var(--gold); background:rgba(212,175,55,0.15); }
+  .fq-formula-row, .fq-glossary-row { background:var(--card); border:1px solid var(--border); border-radius:8px; padding:8px 12px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center; gap:8px; }
+  .fq-glossary-row { display:block; }
+  .fq-formula-name { font-size:12px; color:var(--text); }
+  .fq-formula-expr { font-size:12px; font-family:monospace; color:var(--gold); text-align:right; }
+  .fq-cat-title { font-size:11px; text-transform:uppercase; letter-spacing:1px; color:var(--gold); margin:14px 0 6px; }
+  .fq-flash { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:30px 18px; min-height:160px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; cursor:pointer; }
+  .fq-footer { padding:8px 18px 16px; text-align:center; }
+  .fq-reset-link { background:transparent; border:none; color:var(--dim); font-size:10px; cursor:pointer; opacity:.6; }
+  .fq-splash { min-height:640px; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:40px 24px; text-align:center; }
+  .fq-splash-logo { width:72px;height:72px;border-radius:18px;background:linear-gradient(135deg,#D4AF37,#8A6D1E);color:#0E1420;display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:26px;margin-bottom:18px; box-shadow:0 8px 24px rgba(212,175,55,.35); }
+  .fq-chart { display:flex; align-items:flex-end; gap:6px; height:120px; padding:10px 0; }
+  .fq-chart-bar { flex:1; background:var(--gold); border-radius:4px 4px 0 0; min-height:2px; display:flex; align-items:flex-end; justify-content:center; }
+  .fq-chart-label { font-size:9px; color:var(--dim); text-align:center; margin-top:4px; }
+  .fq-daily { background:var(--card); border:1px solid #F59E0B44; border-radius:14px; padding:14px; margin-bottom:16px; }
+  .fq-toggle-row { display:flex; justify-content:space-between; align-items:center; font-size:13px; margin-bottom:10px; }
+  .fq-font-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .fq-font-btn { display:flex;flex-direction:column;align-items:center;gap:4px;background:var(--card2);border:1px solid var(--border);color:var(--text);padding:12px;border-radius:10px;cursor:pointer; }
+  .fq-font-btn.active { border-color:var(--gold); background:rgba(212,175,55,.12); }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const LEVELS = [
+  {
+    id: 0, title: "Fondations", subtitle: "L'argent, le temps, le risque",
+    color: "#C9A227",
+    modules: [
+      {
+        lesson: "Un euro aujourd'hui vaut plus qu'un euro dans dix ans. Pourquoi ? Parce que l'euro d'aujourd'hui peut être investi et produire un rendement pendant ces dix années. C'est le principe de la 'valeur temporelle de l'argent', l'un des tout premiers concepts enseignés en finance, à la base de tous les calculs d'actualisation que vous croiserez plus loin dans ce parcours. Exemple concret : si vous placez 100€ à 5% par an, vous aurez environ 163€ dans 10 ans. Ces 100€ 'valent' donc plus aujourd'hui que dans le futur, puisqu'ils ont le temps de travailler. Erreur fréquente : croire que 1000€ promis dans 5 ans équivalent à 1000€ aujourd'hui — ce n'est jamais vrai dès qu'un taux d'intérêt existe.",
+        q: "Que représente la valeur temporelle de l'argent ?",
+        a: ["1€ aujourd'hui vaut plus que 1€ dans 10 ans", "1€ vaut toujours la même chose", "L'argent perd sa valeur seulement en cas de guerre", "Ça ne concerne que les banques"],
+        correct: 0,
+        explanationCorrect: "Exactement : un euro disponible maintenant peut être investi et produire un rendement, ce qui le rend plus précieux qu'un euro reçu plus tard. Retenez la formule intuitive : Argent aujourd'hui + Temps + Taux d'intérêt = Plus d'argent demain. C'est la notion qui justifie tout le reste (actualisation, DCF, VAN) que vous verrez plus loin.",
+        explanationWrong: "Ce n'est pas la bonne réponse. Dire que '1€ vaut toujours la même chose' ignore l'effet du temps et du rendement possible : un euro aujourd'hui peut être placé et grossir, un euro futur non. Reprenons l'exemple : 100€ placés à 5% par an valent environ 163€ dans 10 ans — la vraie réponse est donc que 1€ aujourd'hui vaut plus que 1€ dans 10 ans. Ce principe s'applique à toute décision financière, pas seulement aux banques ou aux périodes de guerre.",
+      },
+      {
+        lesson: "L'intérêt composé, c'est l'intérêt calculé non seulement sur votre capital de départ, mais aussi sur les intérêts déjà accumulés les années précédentes. C'est très différent de l'intérêt simple, calculé uniquement sur le capital initial. Exemple : avec 1000€ à 10% par an en intérêt simple, vous gagnez 100€ chaque année pendant 5 ans, soit 1500€ au total. Avec l'intérêt composé, la deuxième année vous touchez 10% sur 1100€ (pas seulement sur 1000€), et ainsi de suite : au bout de 5 ans vous avez environ 1610€. La différence grandit avec le temps — Einstein aurait qualifié ce mécanisme de 'huitième merveille du monde'. Astuce pour mieux comprendre : imaginez une boule de neige qui roule et grossit en ramassant plus de neige à chaque tour, la neige déjà collée continuant elle aussi à en ramasser.",
+        q: "L'intérêt composé, c'est...",
+        a: ["Un intérêt calculé uniquement sur le capital initial", "Un intérêt calculé sur le capital + les intérêts déjà accumulés", "Un intérêt fixe imposé par l'État", "Un synonyme d'inflation"],
+        correct: 1,
+        explanationCorrect: "C'est bien ça : l'intérêt composé se recalcule chaque période sur le capital ET sur les intérêts déjà générés, ce qui crée cet effet 'boule de neige' qui s'accélère avec le temps. Plus la durée est longue, plus l'écart avec l'intérêt simple devient spectaculaire — c'est pour cela qu'investir tôt compte tellement plus que le montant investi au départ.",
+        explanationWrong: "Pas tout à fait. La première option (intérêt calculé uniquement sur le capital initial) décrit en réalité l'intérêt SIMPLE, pas le composé. L'intérêt composé, lui, recalcule aussi sur les intérêts déjà accumulés — c'est ce qui le rend si puissant sur le long terme. Et attention à ne pas confondre avec l'inflation, qui est un phénomène totalement différent : elle mesure la hausse générale des prix, pas la rémunération d'un placement.",
+      },
+      {
+        lesson: "Le rendement 'réel' d'une épargne, c'est le rendement nominal (celui affiché par votre banque) moins l'inflation. Formule simple : Taux réel ≈ Taux nominal − Inflation. Si votre livret rapporte 2% par an, mais que l'inflation est de 4% cette année-là, votre argent perd en réalité 2% de pouvoir d'achat, même si le chiffre sur votre relevé a augmenté. C'est un piège fréquent chez les épargnants débutants : voir son solde grimper ne veut pas dire qu'on s'enrichit réellement en termes de ce qu'on peut acheter avec.",
+        q: "Si l'inflation est plus élevée que le rendement de votre épargne, alors...",
+        a: ["Vous gagnez du pouvoir d'achat", "Vous perdez du pouvoir d'achat", "Rien ne change", "Votre épargne double"],
+        correct: 1,
+        explanationCorrect: "Précisément. Même si le montant en euros augmente sur votre relevé, ces euros achètent moins de biens et services qu'avant, car les prix ont grimpé plus vite que votre épargne. C'est exactement pour cette raison que les investisseurs cherchent des rendements supérieurs à l'inflation sur le long terme — un rendement 'positif' ne suffit pas s'il reste inférieur à l'inflation.",
+        explanationWrong: "Non, c'est l'inverse. Reprenons la formule : Taux réel ≈ Taux nominal − Inflation. Si l'inflation (4%) dépasse le rendement nominal (2%), le taux réel est négatif (2% − 4% = −2%) : vous perdez du pouvoir d'achat, même si votre solde en euros a grimpé. C'est un piège classique qu'il faut absolument retenir avant d'avancer dans le parcours.",
+      },
+      {
+        lesson: "Le principe risque/rendement est le socle de toute décision d'investissement : plus le risque potentiel d'un placement est élevé, plus le rendement espéré doit l'être en compensation — sinon, personne n'accepterait de prendre ce risque plutôt qu'un placement plus sûr. C'est pour cela qu'une obligation d'État très sûre rapporte peu, alors qu'une action d'une jeune entreprise, plus risquée, peut offrir un potentiel de gain plus élevé... mais aussi de perte. Règle d'or à retenir : si on vous promet un rendement élevé garanti 'sans aucun risque', c'est presque toujours un signal d'alerte (arnaque type Ponzi, par exemple celle de Bernard Madoff).",
+        q: "En finance, le principe risque/rendement dit que...",
+        a: ["Un rendement élevé est toujours sans risque", "Plus le risque potentiel est élevé, plus le rendement espéré doit l'être aussi", "Le risque n'a aucun lien avec le rendement", "Il faut éviter tout risque, toujours"],
+        correct: 1,
+        explanationCorrect: "C'est ça : risque et rendement espéré évoluent normalement dans le même sens, c'est la logique même du marché — personne ne prendrait un risque supplémentaire pour le même rendement qu'un placement sûr. Gardez ce réflexe en tête pour la suite du parcours : chaque fois qu'un placement affiche un rendement élevé, demandez-vous quel risque il cache.",
+        explanationWrong: "Ce n'est pas la bonne réponse. Un rendement élevé 'sans risque' est justement le signal d'alerte classique des arnaques financières (type Ponzi) : en réalité, plus le risque est élevé, plus le rendement espéré doit l'être pour compenser. Et éviter tout risque n'est pas réaliste non plus : même garder de l'argent liquide comporte un risque, celui de l'inflation vue à la leçon précédente.",
+      },
+      {
+        lesson: "Toutes les dettes ne se valent pas. Une 'bonne dette' finance un actif qui génère de la valeur ou des revenus dans le temps : un prêt étudiant qui augmente votre capacité de revenu futur, un crédit immobilier locatif qui génère des loyers, ou un prêt pour développer une entreprise rentable. Une 'mauvaise dette' finance des biens qui perdent immédiatement de la valeur et ne rapportent rien, comme un crédit à la consommation pour des achats non essentiels à taux élevé. Astuce pour trancher : demandez-vous toujours 'Est-ce que ce que j'achète avec cet argent emprunté va me rapporter plus que ce qu'il me coûte en intérêts ?'",
+        q: "Une 'bonne dette' sert généralement à...",
+        a: ["Financer des vacances", "Financer un actif qui génère de la valeur ou des revenus (étude, immobilier locatif, entreprise)", "Acheter des produits qui perdent leur valeur immédiatement", "Payer d'autres dettes uniquement"],
+        correct: 1,
+        explanationCorrect: "Exactement : c'est l'usage qui distingue une bonne d'une mauvaise dette — financer un actif qui rapporte (immobilier locatif, formation, entreprise) plutôt qu'une dépense qui ne génère aucun retour futur. Retenez la question-test de la leçon : est-ce que cet emprunt va me rapporter plus qu'il ne me coûte ?",
+        explanationWrong: "Pas exactement. Les vacances ou les achats de consommation financés à crédit ne créent aucune valeur future — l'argent est simplement dépensé, pas investi, ce qui en fait plutôt de la 'mauvaise dette'. La bonne réponse est de financer un actif générateur de valeur (immobilier locatif, formation, entreprise), qui rapporte davantage que son coût en intérêts.",
+      },
+    ],
+  },
+  {
+    id: 1, title: "Finance personnelle", subtitle: "Budget, épargne, patrimoine",
+    color: "#8AA876",
+    modules: [
+      {
+        lesson: "Le patrimoine net, c'est la vraie photo de votre richesse à un instant donné. On le calcule ainsi : Patrimoine net = Actifs (ce que vous possédez : épargne, immobilier, placements) moins Passifs (ce que vous devez : crédits, dettes). Exemple détaillé : vous possédez un appartement de 200 000€ et avez 30 000€ d'épargne, mais il vous reste 150 000€ de crédit immobilier à rembourser. Votre patrimoine net est de 200 000 + 30 000 − 150 000 = 80 000€. Retenez bien : posséder un bien de grande valeur ne veut pas dire être riche si la dette associée est encore élevée.",
+        q: "Le patrimoine net se calcule comme :",
+        a: ["Revenus − Dépenses", "Actifs − Passifs", "Épargne + Salaire", "Actifs + Passifs"],
+        correct: 1,
+        explanationCorrect: "C'est exact : Actifs − Passifs, ce que vous possédez moins ce que vous devez. Reprenez l'exemple de la leçon si besoin : 200 000 (appartement) + 30 000 (épargne) − 150 000 (crédit restant) = 80 000€ de patrimoine net.",
+        explanationWrong: "Ce n'est pas ça. 'Revenus − Dépenses' donne votre épargne mensuelle ou annuelle (un flux dans le temps), ce qui est différent du patrimoine net (une photo à un instant T). La bonne formule est Actifs − Passifs : reprenez l'exemple de la leçon, 200 000 + 30 000 − 150 000 = 80 000€.",
+      },
+      {
+        lesson: "Un fonds d'urgence, c'est une réserve d'argent facilement disponible, généralement équivalente à 3 à 6 mois de dépenses essentielles (loyer, nourriture, factures). Son but : éviter de s'endetter à taux élevé en cas d'imprévu — perte d'emploi, panne de voiture, urgence médicale. C'est la toute première brique recommandée par la quasi-totalité des conseillers financiers, avant même de commencer à investir en bourse, car investir de l'argent dont on pourrait avoir besoin dans l'urgence oblige parfois à vendre au pire moment (quand les marchés ont justement baissé).",
+        q: "Un fonds d'urgence sert à couvrir généralement :",
+        a: ["1 semaine de dépenses", "3 à 6 mois de dépenses essentielles", "10 ans de dépenses", "Uniquement les impôts"],
+        correct: 1,
+        explanationCorrect: "Tout à fait : 3 à 6 mois de dépenses essentielles est la norme la plus largement recommandée, assez pour absorber un choc sans devoir emprunter à taux élevé ou vendre des investissements en catastrophe.",
+        explanationWrong: "Non. Une semaine est nettement insuffisante face à un vrai imprévu (perte d'emploi, par exemple), et 10 ans dépasse largement l'objectif d'un fonds 'd'urgence' — ce serait alors de l'épargne de long terme. La norme retenue par la plupart des conseillers est 3 à 6 mois de dépenses essentielles.",
+      },
+      {
+        lesson: "En France, le PEA (Plan d'Épargne en Actions) est une enveloppe fiscale qui permet d'investir en actions européennes en bénéficiant d'une fiscalité allégée sur les gains, à condition de garder le plan ouvert au moins 5 ans. C'est un outil très utilisé par les investisseurs particuliers pour la bourse à long terme, à côté du compte-titres ordinaire (plus flexible mais moins avantageux fiscalement) et de l'assurance-vie (plus orientée épargne diversifiée et transmission de patrimoine).",
+        q: "Un PEA (en France) est surtout avantageux pour :",
+        a: ["Les obligations d'État uniquement", "Investir en actions européennes avec une fiscalité allégée après 5 ans", "Épargner sans jamais investir", "Payer moins d'impôt sur le salaire"],
+        correct: 1,
+        explanationCorrect: "C'est ça : le PEA est conçu pour l'investissement en actions européennes, avec un avantage fiscal qui se déclenche après 5 ans de détention du plan.",
+        explanationWrong: "Non, le PEA ne concerne pas les obligations d'État, et n'a aucun lien avec l'impôt sur le salaire (un tout autre régime fiscal). Il n'a d'intérêt que si l'on investit réellement dedans en actions européennes : c'est justement sa fiscalité allégée après 5 ans qui en fait un outil recherché par les investisseurs particuliers.",
+      },
+      {
+        lesson: "Diversifier, c'est répartir son épargne entre plusieurs actifs différents (actions de secteurs variés, obligations, immobilier...) plutôt que de tout miser sur un seul. L'objectif n'est pas d'augmenter le rendement, mais de réduire le risque global : si un actif chute fortement, les autres peuvent compenser. C'est le sens du dicton 'ne mettez pas tous vos œufs dans le même panier', validé mathématiquement par la théorie moderne du portefeuille que nous verrons plus loin dans le parcours (niveau Gestion d'actifs).",
+        q: "Pourquoi diversifier son épargne/investissement ?",
+        a: ["Pour compliquer sa comptabilité", "Pour réduire le risque global en ne dépendant pas d'un seul actif", "Parce que la loi l'exige", "Ça n'a aucun intérêt réel"],
+        correct: 1,
+        explanationCorrect: "Exactement : la diversification réduit le risque global du portefeuille en ne dépendant pas d'un seul actif — un principe qui sera démontré mathématiquement plus loin dans votre parcours (théorie de Markowitz).",
+        explanationWrong: "Non, ce n'est pas une obligation légale, c'est un choix stratégique dont l'intérêt est aujourd'hui largement démontré. Le bon objectif de la diversification est de réduire le risque global, pas de compliquer volontairement sa gestion (qui peut d'ailleurs rester simple, via un ETF diversifié en un seul produit).",
+      },
+      {
+        lesson: "Le taux d'endettement, c'est la part de vos revenus mensuels consacrée au remboursement de crédits. Les banques utilisent couramment une limite de 33% des revenus comme référence pour accorder un nouveau crédit (comme un prêt immobilier), afin de s'assurer que l'emprunteur garde un 'reste à vivre' suffisant. Ce n'est pas une loi absolue et cela varie selon les revenus et les pays, mais c'est la norme la plus répandue dans le secteur bancaire français.",
+        q: "Le taux d'endettement recommandé (grand public) ne devrait généralement pas dépasser :",
+        a: ["10%", "33% des revenus", "70%", "Il n'y a aucune limite"],
+        correct: 1,
+        explanationCorrect: "C'est exact : 33% des revenus est la référence classique utilisée notamment par les banques françaises pour l'octroi de crédit immobilier.",
+        explanationWrong: "Non, la bonne référence est 33% des revenus. En dessous, le remboursement est jugé soutenable ; au-delà, le risque de surendettement augmente fortement — dire qu'il n'y a 'aucune limite' ignore ce garde-fou standard utilisé par les banques.",
+      },
+      {
+        lesson: "Calcul pratique de l'intérêt composé : la formule est VF = VP × (1 + r)^n, où VF est la valeur future, VP la valeur présente (le capital de départ), r le taux d'intérêt annuel (en décimal) et n le nombre d'années. Exemple détaillé pas à pas : vous placez 2000€ à un taux de 5% par an pendant 3 ans. On calcule d'abord (1,05)³ = 1,157625, puis on multiplie par 2000 : VF = 2000 × 1,157625 ≈ 2315€.",
+        q: "Vous placez 2000€ à 5% par an pendant 3 ans (intérêt composé). Quelle est approximativement la valeur finale ?",
+        a: ["2100€", "2300€", "2315€", "3000€"],
+        correct: 2,
+        explanationCorrect: "C'est le bon calcul : VF = 2000 × (1,05)^3 = 2000 × 1,157625 ≈ 2315€. Gardez cette méthode en tête (calculer d'abord (1+r)^n, puis multiplier par le capital) pour tout calcul d'intérêt composé futur.",
+        explanationWrong: "Reprenons le calcul étape par étape : (1,05)^3 = 1,157625. Puis 2000 × 1,157625 ≈ 2315€. Le chiffre 2100€ correspondrait plutôt à un intérêt simple sur une seule année à un taux plus élevé, et 3000€ surestime largement l'effet réel du taux de 5% sur seulement 3 ans — la bonne réponse est bien 2315€.",
+      },
+    ],
+  },
+  {
+    id: 2, title: "Comptabilité", subtitle: "Le langage universel de l'entreprise",
+    color: "#5B8DB8",
+    modules: [
+      {
+        lesson: "Le bilan comptable est une photo du patrimoine de l'entreprise à un instant précis (par exemple, le 31 décembre). Il se compose de trois grandes masses : les Actifs (ce que l'entreprise possède : locaux, machines, trésorerie, stocks...), les Passifs (ce qu'elle doit : dettes, emprunts) et les Capitaux propres (la part qui appartient aux actionnaires). L'équation fondamentale, toujours vraie, est : Actif = Passif + Capitaux propres. Le bilan doit toujours être équilibré, d'où son nom.",
+        q: "Le bilan comptable montre :",
+        a: ["Les ventes du mois", "Une photo du patrimoine de l'entreprise à un instant T (actifs, passifs, capitaux propres)", "Uniquement les salaires", "Le cours de l'action"],
+        correct: 1,
+        explanationCorrect: "Exactement : le bilan est un 'stock' à un instant T, montrant ce que l'entreprise possède et doit à une date précise, toujours équilibré selon Actif = Passif + Capitaux propres.",
+        explanationWrong: "Non. Les ventes du mois relèvent du compte de résultat, pas du bilan. Et le cours de l'action est fixé par le marché boursier, ce qui est encore autre chose. Le bilan, lui, est bien une photo instantanée du patrimoine de l'entreprise (actifs, passifs, capitaux propres) à une date donnée.",
+      },
+      {
+        lesson: "Le compte de résultat mesure la performance de l'entreprise sur une période donnée (un trimestre, une année), contrairement au bilan qui est une photo instantanée. Il additionne les revenus (chiffre d'affaires) et soustrait les charges (achats, salaires, impôts...) pour obtenir le bénéfice, ou la perte. C'est le document qui répond à la question : 'l'entreprise a-t-elle gagné ou perdu de l'argent sur cette période ?'",
+        q: "Le compte de résultat mesure :",
+        a: ["La performance sur une période (revenus − charges = bénéfice)", "La trésorerie disponible en banque", "La valeur boursière de l'entreprise", "Le nombre d'employés"],
+        correct: 0,
+        explanationCorrect: "C'est ça : le compte de résultat est un flux sur une période, calculant le bénéfice (ou la perte) via revenus moins charges — à distinguer du bilan, qui est un stock à un instant T.",
+        explanationWrong: "Non. La trésorerie disponible relève du bilan et du tableau des flux de trésorerie. La valeur boursière dépend du marché, pas directement de ce document. Le compte de résultat mesure bien la performance sur une période via revenus moins charges.",
+      },
+      {
+        lesson: "Une entreprise peut afficher un joli bénéfice sur son compte de résultat tout en manquant cruellement de cash en banque. Pourquoi ? Deux raisons principales : d'abord, certaines charges comme l'amortissement sont comptables mais non-cash (aucun argent ne sort réellement de la caisse ce jour-là) ; ensuite, une vente peut être comptabilisée avant même d'être payée par le client (le client paie à 60 jours, par exemple). C'est pour cela que les analystes regardent toujours le tableau des flux de trésorerie en plus du compte de résultat.",
+        q: "Pourquoi le bénéfice comptable peut différer du cash flow réel ?",
+        a: ["Ils sont toujours identiques", "À cause d'éléments non-cash comme l'amortissement, ou de ventes non encore encaissées", "Le cash flow n'existe pas en comptabilité", "C'est une erreur de calcul systématique"],
+        correct: 1,
+        explanationCorrect: "Exactement : les charges non-cash (comme l'amortissement) et le décalage entre vente comptable et paiement réel du client expliquent cette différence entre bénéfice et cash flow.",
+        explanationWrong: "Non. Le cash flow existe bel et bien en comptabilité (via le tableau des flux de trésorerie), ce n'est pas une erreur systématique. La bonne explication tient aux éléments non-cash (amortissement) et au décalage de paiement des clients.",
+      },
+      {
+        lesson: "L'amortissement répartit le coût d'un actif durable (une machine, un bâtiment, un véhicule) sur toute sa durée de vie utile, plutôt que de le passer en charge en une seule fois. Exemple : une machine achetée 100 000€ et amortie sur 10 ans génère une charge d'amortissement de 10 000€ par an dans le compte de résultat, même si les 100 000€ ont été payés en une fois au départ. C'est une charge comptable, pas une sortie de cash réelle chaque année.",
+        q: "L'amortissement représente :",
+        a: ["Le remboursement d'une dette uniquement", "La répartition du coût d'un actif sur sa durée de vie utile", "Un impôt supplémentaire", "Le prix d'achat d'une action"],
+        correct: 1,
+        explanationCorrect: "C'est exact : l'amortissement étale la charge d'un actif sur sa durée de vie utile — reprenez l'exemple de la machine à 100 000€ amortie sur 10 ans, soit 10 000€ de charge annuelle.",
+        explanationWrong: "Non, ce n'est ni un remboursement de dette (mécanisme distinct), ni un impôt, ni le prix d'une action. L'amortissement répartit le coût d'un actif durable sur sa durée de vie utile — reprenez l'exemple de la machine à 100 000€ amortie sur 10 ans.",
+      },
+      {
+        lesson: "La marge nette indique combien de profit reste sur chaque euro de vente, après avoir payé toutes les charges (achats, salaires, impôts, intérêts...). On la calcule ainsi : Marge nette = Bénéfice net / Chiffre d'affaires. Exemple détaillé : une entreprise réalise 1 000 000€ de chiffre d'affaires et 80 000€ de bénéfice net. Sa marge nette est de 80 000 / 1 000 000 = 0,08, soit 8%.",
+        q: "La marge nette se calcule :",
+        a: ["Chiffre d'affaires − charges totales, divisé par le chiffre d'affaires", "Actifs − Passifs", "Prix de l'action / bénéfice par action", "Capitaux propres / dette"],
+        correct: 0,
+        explanationCorrect: "Exactement : (Chiffre d'affaires − charges) donne le bénéfice net, divisé ensuite par le chiffre d'affaires pour obtenir la marge nette en pourcentage.",
+        explanationWrong: "Non. 'Actifs − Passifs' donne le patrimoine net (autre notion). 'Prix / bénéfice par action' est le PER (valorisation boursière). La marge nette se calcule bien via (Chiffre d'affaires − charges totales) / Chiffre d'affaires.",
+      },
+      {
+        lesson: "Petit calcul de marge nette, pas à pas : une entreprise réalise 500 000€ de chiffre d'affaires. Ses charges totales (achats, salaires, impôts, intérêts) s'élèvent à 460 000€. Étape 1 : Bénéfice net = 500 000 − 460 000 = 40 000€. Étape 2 : Marge nette = 40 000 / 500 000 = 0,08, soit 8%.",
+        q: "Chiffre d'affaires 500 000€, charges totales 460 000€. Quelle est la marge nette ?",
+        a: ["4%", "8%", "12%", "46%"],
+        correct: 1,
+        explanationCorrect: "Bon calcul : Bénéfice net = 500 000 − 460 000 = 40 000€, puis Marge nette = 40 000 / 500 000 = 8%.",
+        explanationWrong: "Reprenons : Bénéfice net = 500 000 − 460 000 = 40 000€. Marge nette = 40 000 / 500 000 = 8%. Le 46% vient d'une confusion avec le ratio charges/chiffre d'affaires — la bonne réponse est 8%.",
+      },
+    ],
+  },
+  {
+    id: 3, title: "Marchés financiers", subtitle: "Actions, obligations, ETF",
+    color: "#B85C5C",
+    modules: [
+      {
+        lesson: "Une action est une part de propriété d'une entreprise. En achetant une action, vous devenez copropriétaire, avec généralement un droit de vote en assemblée générale et un droit potentiel à une part des bénéfices distribués (le dividende). Contrairement à un prêt, il n'y a aucune garantie de remboursement : si l'entreprise fait faillite, les actionnaires sont remboursés en dernier, après les créanciers.",
+        q: "Une action représente :",
+        a: ["Un prêt fait à l'entreprise", "Une part de propriété de l'entreprise", "Une assurance sur l'entreprise", "Un contrat de travail"],
+        correct: 1,
+        explanationCorrect: "C'est ça : l'action est de la propriété, avec droit de vote et dividende potentiel, mais sans garantie de remboursement contrairement à un prêt.",
+        explanationWrong: "Non. Un prêt à l'entreprise correspond plutôt à une obligation (leçon suivante). Une action n'est ni une assurance ni un contrat de travail : c'est une part de propriété, sans garantie de remboursement en cas de faillite.",
+      },
+      {
+        lesson: "Une obligation est un prêt que vous accordez à une entité (un État ou une entreprise), qui s'engage à vous verser un intérêt régulier (le coupon) et à vous rembourser le capital à l'échéance. Contrairement à l'actionnaire, l'obligataire est un créancier : il est prioritaire en cas de faillite, mais ne profite pas directement de la croissance de l'entreprise au-delà des intérêts prévus.",
+        q: "Une obligation représente :",
+        a: ["Une part de propriété", "Un prêt fait à une entité (État ou entreprise) contre un intérêt", "Un produit dérivé complexe", "Une action sans droit de vote"],
+        correct: 1,
+        explanationCorrect: "Exactement : l'obligation est un prêt, ce qui fait de son détenteur un créancier prioritaire en cas de faillite, contrairement à l'actionnaire.",
+        explanationWrong: "Non, ce n'est pas une part de propriété (ça, c'est l'action) ni un produit dérivé (qui tire sa valeur d'un actif sous-jacent). L'obligation est un prêt simple et direct fait à une entité, contre un intérêt régulier.",
+      },
+      {
+        lesson: "Un ETF (Exchange Traded Fund, ou 'fonds indiciel coté') est un fonds qui réplique la performance d'un indice ou d'un panier d'actifs, et qui se négocie en bourse comme une action ordinaire. Exemple : un ETF répliquant le S&P 500 vous donne, en un seul achat, une exposition aux 500 plus grandes entreprises américaines, sans avoir à acheter chaque action individuellement.",
+        q: "Un ETF (Exchange Traded Fund) est :",
+        a: ["Une seule action très volatile", "Un fonds coté qui réplique un indice ou un panier d'actifs", "Un compte bancaire spécial", "Un type d'obligation d'État uniquement"],
+        correct: 1,
+        explanationCorrect: "C'est ça : l'ETF réplique un indice ou un panier diversifié d'actifs en un seul produit coté en bourse, comme dans l'exemple du S&P 500.",
+        explanationWrong: "Non, ce n'est ni une action unique volatile, ni un compte bancaire, ni limité aux obligations d'État. L'ETF réplique un indice ou panier d'actifs (actions, obligations, matières premières...) en un seul produit coté.",
+      },
+      {
+        lesson: "Il existe deux grands types d'ordres en bourse. L'ordre 'au marché' s'exécute immédiatement, au meilleur prix disponible, mais sans contrôle sur ce prix exact. L'ordre 'à cours limité' fixe un prix maximum (à l'achat) ou minimum (à la vente) que vous acceptez : l'ordre ne s'exécutera que si le marché atteint ce niveau, ou un niveau plus favorable — mais rien ne garantit qu'il s'exécute réellement.",
+        q: "Un ordre 'à cours limité' signifie :",
+        a: ["L'ordre s'exécute immédiatement au prix du marché", "L'ordre ne s'exécute qu'au prix fixé par vous ou meilleur", "Vous ne pouvez jamais vendre l'action", "C'est réservé aux professionnels"],
+        correct: 1,
+        explanationCorrect: "Exactement : l'ordre à cours limité protège le prix d'exécution, au prix d'une incertitude sur l'exécution elle-même.",
+        explanationWrong: "Non, l'ordre qui s'exécute immédiatement au prix du marché est l'ordre 'au marché', pas l'ordre à cours limité. Ce dernier est accessible à tout particulier, et n'empêche en rien de vendre : il ne s'exécute que si le prix fixé (ou meilleur) est atteint.",
+      },
+      {
+        lesson: "Un split d'action (par exemple 2 pour 1) divise le prix de chaque action par deux et double le nombre d'actions en circulation, sans changer la valeur totale de votre investissement ni celle de l'entreprise. Exemple : si vous détenez 10 actions à 100€ (soit 1000€) et que l'entreprise fait un split 2 pour 1, vous aurez 20 actions à 50€ — toujours 1000€ au total.",
+        q: "Un split d'action (ex : 2 pour 1) :",
+        a: ["Double la valeur totale de vos actions", "Divise le prix par action et multiplie le nombre d'actions, sans changer la valeur totale", "Réduit vos droits de vote", "Correspond à un dividende exceptionnel"],
+        correct: 1,
+        explanationCorrect: "C'est ça : le split ajuste prix et nombre d'actions en proportion inverse, sans créer ni détruire de valeur — reprenez l'exemple des 10 actions à 100€ devenant 20 actions à 50€.",
+        explanationWrong: "Non, le split ne double pas la valeur totale, ne réduit pas vos droits de vote (proportionnellement inchangés) et n'a rien à voir avec un dividende (aucun argent n'est distribué). Il ajuste simplement prix et nombre d'actions sans changer la valeur totale.",
+      },
+      {
+        lesson: "Calcul du rendement d'un dividende : Rendement = Dividende annuel par action / Prix de l'action. Exemple pas à pas : une action cote 50€ et verse un dividende annuel de 2€. Rendement = 2 / 50 = 0,04, soit 4%.",
+        q: "Une action cote 80€ et verse un dividende annuel de 4€. Quel est le rendement du dividende ?",
+        a: ["2%", "4%", "5%", "8%"],
+        correct: 2,
+        explanationCorrect: "Bon calcul : Rendement = Dividende / Prix = 4 / 80 = 0,05, soit 5%.",
+        explanationWrong: "Reprenons : Rendement = Dividende / Prix = 4 / 80 = 5%. Le 4% correspond au montant du dividende en euros, pas au rendement en pourcentage — ne confondez pas le montant absolu et le ratio calculé par rapport au prix.",
+      },
+    ],
+  },
+  {
+    id: 4, title: "Analyse & valorisation", subtitle: "Ratios, DCF, moat",
+    color: "#9B6BB3",
+    modules: [
+      {
+        lesson: "Le PER (Price Earning Ratio, ou ratio cours/bénéfice) se calcule ainsi : PER = Prix de l'action / Bénéfice par action. Il indique combien d'années de bénéfices actuels il faudrait pour 'rembourser' le prix payé pour l'action, si ce bénéfice restait stable. Exemple : une action à 40€ avec un bénéfice par action de 2€ a un PER de 20.",
+        q: "Le PER (Price Earning Ratio) se calcule :",
+        a: ["Prix de l'action / Bénéfice par action", "Bénéfice / Chiffre d'affaires", "Dette / Capitaux propres", "Dividende / Prix de l'action"],
+        correct: 0,
+        explanationCorrect: "Exactement : PER = Prix / Bénéfice par action — reprenez l'exemple de l'action à 40€ avec 2€ de bénéfice par action, soit un PER de 20.",
+        explanationWrong: "Non. 'Bénéfice / Chiffre d'affaires' est la marge nette, 'Dette / Capitaux propres' un ratio d'endettement, et 'Dividende / Prix' le rendement du dividende. Le PER, lui, se calcule Prix / Bénéfice par action.",
+      },
+      {
+        lesson: "Le ROE (Return on Equity, ou rentabilité des capitaux propres) mesure combien de profit l'entreprise génère pour chaque euro investi par ses actionnaires. Formule : ROE = Bénéfice net / Capitaux propres. Exemple : une entreprise avec 200 000€ de capitaux propres et 30 000€ de bénéfice net a un ROE de 30 000/200 000 = 15%.",
+        q: "Le ROE (Return on Equity) mesure :",
+        a: ["Le rendement du chiffre d'affaires", "La rentabilité générée pour les actionnaires par rapport aux capitaux propres", "Le prix de l'action sur le marché", "La dette totale de l'entreprise"],
+        correct: 1,
+        explanationCorrect: "C'est exact : ROE = Bénéfice net / Capitaux propres, mesurant l'efficacité de l'entreprise à générer du profit avec l'argent de ses actionnaires.",
+        explanationWrong: "Non, le ROE ne mesure ni le chiffre d'affaires, ni le prix de marché de l'action, ni la dette brute. Il rapporte le bénéfice net aux capitaux propres — reprenez l'exemple : 30 000 / 200 000 = 15%.",
+      },
+      {
+        lesson: "Le DCF (Discounted Cash Flow, ou flux de trésorerie actualisés) est une méthode de valorisation qui estime la valeur d'une entreprise en projetant ses flux de trésorerie futurs, puis en les actualisant (ramenés à leur valeur d'aujourd'hui, en lien direct avec la valeur temporelle de l'argent vue au Niveau 0). C'est l'une des méthodes les plus utilisées en corporate finance et en fusions-acquisitions.",
+        q: "Le DCF (Discounted Cash Flow) sert à :",
+        a: ["Calculer les impôts d'une entreprise", "Estimer la valeur d'une entreprise via ses flux de trésorerie futurs actualisés", "Mesurer la liquidité d'une action", "Calculer le taux d'inflation"],
+        correct: 1,
+        explanationCorrect: "Exactement : le DCF valorise une entreprise en actualisant ses flux de trésorerie futurs attendus — la méthode phare en corporate finance et M&A.",
+        explanationWrong: "Non, le DCF ne calcule ni les impôts, ni la liquidité d'une action, ni l'inflation (qui est une donnée d'entrée du modèle, pas son résultat). Il estime la valeur d'une entreprise via ses flux futurs actualisés.",
+      },
+      {
+        lesson: "Un 'moat' (littéralement 'douve', comme autour d'un château) désigne un avantage concurrentiel durable qui protège une entreprise de la concurrence : une marque très forte, des brevets, des effets de réseau, ou des coûts de changement élevés pour les clients. Concept popularisé par Warren Buffett pour identifier des entreprises capables de maintenir leur rentabilité sur le long terme.",
+        q: "Un 'moat' (avantage concurrentiel durable) peut être :",
+        a: ["Une marque forte, des brevets, des effets de réseau, des coûts de changement élevés", "Uniquement un prix bas", "Une dette élevée", "Un cours de bourse volatil"],
+        correct: 0,
+        explanationCorrect: "C'est ça : marque, brevets, effets de réseau et coûts de changement forment des barrières durables face à la concurrence.",
+        explanationWrong: "Non. Un simple prix bas n'est pas un moat durable (un concurrent peut baisser ses prix aussi), et une dette élevée ou un cours volatil sont des facteurs de risque, pas des avantages concurrentiels. La bonne réponse regroupe marque, brevets, effets de réseau et coûts de changement.",
+      },
+      {
+        lesson: "Le 'value investing' consiste à chercher des entreprises jugées sous-évaluées par le marché par rapport à leur valeur réelle (approche de Benjamin Graham et Warren Buffett). Le 'growth investing' cherche au contraire des entreprises à forte croissance future, quitte à payer un prix élevé aujourd'hui, en pariant sur une expansion rapide des bénéfices futurs.",
+        q: "Value investing vs growth investing :",
+        a: ["Ce sont des synonymes", "Value cherche des entreprises sous-évaluées, growth cherche une forte croissance future même à prix élevé", "Growth investing évite toujours la bourse", "Value investing concerne uniquement les obligations"],
+        correct: 1,
+        explanationCorrect: "Exactement : value cherche la décote de valeur, growth accepte un prix élevé en pariant sur la croissance future — deux philosophies distinctes.",
+        explanationWrong: "Non, ce ne sont pas des synonymes. Le growth investing se pratique justement essentiellement en bourse (actions de croissance), et le value investing ne se limite pas aux obligations : il concerne avant tout les actions jugées sous-évaluées.",
+      },
+      {
+        lesson: "Petit calcul de PER, pas à pas : une action cote 90€, avec un bénéfice par action de 6€. PER = Prix / Bénéfice par action = 90 / 6 = 15.",
+        q: "Une action cote 90€, avec un bénéfice par action de 6€. Quel est son PER ?",
+        a: ["6", "15", "18", "540"],
+        correct: 1,
+        explanationCorrect: "Bon calcul : PER = 90 / 6 = 15.",
+        explanationWrong: "Reprenons : PER = Prix / Bénéfice par action = 90 / 6 = 15. Le 540 vient d'une multiplication (90 × 6) au lieu d'une division — attention à ne pas confondre les deux opérations sur ce ratio.",
+      },
+    ],
+  },
+  {
+    id: 5, title: "Macroéconomie", subtitle: "Banques centrales, cycles, taux",
+    color: "#4A9B8E",
+    modules: [
+      {
+        lesson: "Quand une banque centrale (comme la BCE ou la Fed) augmente ses taux directeurs, elle cherche généralement à freiner l'inflation. Des taux plus élevés rendent le crédit plus cher pour les ménages et les entreprises, ce qui ralentit la consommation et l'investissement, et donc la demande globale — ce qui, en théorie, fait baisser la pression sur les prix.",
+        q: "Quand une banque centrale augmente ses taux directeurs, elle cherche généralement à :",
+        a: ["Stimuler l'inflation", "Freiner l'inflation en renchérissant le crédit", "Faire baisser sa propre monnaie", "Augmenter les salaires par décret"],
+        correct: 1,
+        explanationCorrect: "C'est exact : des taux plus élevés renchérissent le crédit, ralentissent la demande globale, et freinent ainsi l'inflation.",
+        explanationWrong: "Non. La hausse des taux tend plutôt à renforcer la monnaie (pas à la faire baisser), et les banques centrales n'ont aucun pouvoir direct sur les salaires du privé. La bonne réponse est bien : freiner l'inflation en renchérissant le crédit.",
+      },
+      {
+        lesson: "La courbe des taux représente les taux d'intérêt des obligations d'État selon leur échéance. Normalement, les taux longs sont plus élevés que les taux courts. Quand cette relation s'inverse, on parle de 'courbe inversée' — un signal historiquement associé, sans être infaillible, à un risque accru de récession dans les mois ou années suivantes.",
+        q: "Une courbe des taux inversée (taux courts > taux longs) est historiquement :",
+        a: ["Un signal neutre sans importance", "Considérée comme un indicateur avancé possible de récession", "Toujours synonyme de boom économique", "Impossible à observer"],
+        correct: 1,
+        explanationCorrect: "Exactement : la courbe inversée a précédé plusieurs récessions américaines par le passé, sans être un signal infaillible à 100%.",
+        explanationWrong: "Non, elle n'est ni neutre ni impossible à observer (elle s'est produite plusieurs fois), et elle est associée à un risque de ralentissement plutôt qu'à un boom économique.",
+      },
+      {
+        lesson: "Le PIB (Produit Intérieur Brut) mesure la valeur totale des biens et services produits dans un pays sur une période donnée. C'est l'indicateur central pour juger de la santé économique globale d'un pays : un recul sur deux trimestres consécutifs est souvent utilisé comme définition technique d'une récession.",
+        q: "Le PIB mesure :",
+        a: ["La dette totale d'un pays", "La valeur totale des biens et services produits dans un pays sur une période", "Le nombre de chômeurs", "Le taux de change d'une monnaie"],
+        correct: 1,
+        explanationCorrect: "C'est exact : le PIB mesure la production économique totale d'un pays sur une période donnée.",
+        explanationWrong: "Non, la dette, le chômage et le taux de change sont des indicateurs distincts, suivis en parallèle. Le PIB, lui, mesure spécifiquement la valeur des biens et services produits sur une période.",
+      },
+      {
+        lesson: "La politique monétaire (taux d'intérêt, masse monétaire) est menée par la banque centrale, indépendamment des gouvernements dans la plupart des économies développées. La politique budgétaire (impôts, dépenses publiques) relève, elle, du gouvernement et du parlement.",
+        q: "La politique monétaire est menée par :",
+        a: ["Le gouvernement via le budget de l'État", "La banque centrale via les taux d'intérêt et la masse monétaire", "Les entreprises privées", "Les agences de notation"],
+        correct: 1,
+        explanationCorrect: "Exactement : la politique monétaire est bien du ressort de la banque centrale, distincte de la politique budgétaire du gouvernement.",
+        explanationWrong: "Non, les entreprises privées et les agences de notation ne pilotent aucune politique économique nationale. La politique monétaire est bien menée par la banque centrale.",
+      },
+      {
+        lesson: "Un cycle économique typique comprend plusieurs phases : l'expansion, le pic, la récession ou contraction, puis le creux et la reprise. Ces cycles se répètent dans le temps, avec une durée et une intensité variables selon les périodes et les pays.",
+        q: "Un cycle économique typique comprend :",
+        a: ["Expansion, pic, récession, creux/reprise", "Seulement croissance perpétuelle", "Un seul état permanent", "Inflation puis fin de l'économie"],
+        correct: 0,
+        explanationCorrect: "C'est ça : les économies alternent naturellement entre ces différentes phases du cycle.",
+        explanationWrong: "Non, il n'existe pas de croissance 'perpétuelle' ni d'état permanent unique — l'histoire économique montre bien une alternance de phases : expansion, pic, récession, creux et reprise.",
+      },
+    ],
+  },
+  {
+    id: 6, title: "Produits financiers avancés", subtitle: "Dérivés, options, levier",
+    color: "#C97757",
+    modules: [
+      {
+        lesson: "Une option 'call' donne à son détenteur le droit (mais pas l'obligation) d'acheter un actif à un prix fixé à l'avance (le 'strike'), avant ou à une date d'échéance précise. C'est un pari, ou une couverture, sur une hausse du prix de l'actif sous-jacent. Exemple : un call sur une action au strike de 50€ devient intéressant si le cours dépasse 50€ (plus le prix de l'option elle-même) avant l'échéance.",
+        q: "Une option 'call' donne le droit de :",
+        a: ["Vendre un actif à un prix fixé", "Acheter un actif à un prix fixé (le strike), avant/à une échéance", "Recevoir un dividende garanti", "Emprunter sans intérêt"],
+        correct: 1,
+        explanationCorrect: "Exactement : le call donne le droit d'acheter à un prix fixé (le strike) — un pari ou une couverture sur une hausse du cours.",
+        explanationWrong: "Non, vendre à un prix fixé est le rôle du 'put' (leçon suivante). Une option ne garantit jamais de dividende, et n'a aucun lien avec un emprunt sans intérêt. Le call, lui, donne le droit d'acheter à un prix fixé avant échéance.",
+      },
+      {
+        lesson: "À l'inverse du call, une option 'put' donne le droit (mais pas l'obligation) de vendre un actif à un prix fixé à l'avance, avant ou à une échéance donnée. Elle est souvent utilisée comme une forme d'assurance contre une baisse du marché : si vous détenez une action et craignez une chute, acheter un put vous garantit un prix de vente minimum.",
+        q: "Une option 'put' donne le droit de :",
+        a: ["Acheter un actif à un prix fixé", "Vendre un actif à un prix fixé (le strike), avant/à une échéance", "Recevoir un intérêt fixe", "Émettre de nouvelles actions"],
+        correct: 1,
+        explanationCorrect: "C'est ça : le put donne le droit de vendre à un prix fixé, à l'opposé exact du call — souvent utilisé comme assurance contre une baisse.",
+        explanationWrong: "Non, acheter à un prix fixé est le rôle du call. Le put ne concerne ni un intérêt fixe (ce serait une obligation) ni l'émission d'actions (décision de l'entreprise). Il donne le droit de vendre à un prix fixé.",
+      },
+      {
+        lesson: "L'effet de levier consiste à emprunter pour amplifier une position d'investissement, ce qui amplifie aussi bien les gains potentiels que les pertes potentielles. Exemple : avec un levier x10, un mouvement de marché de 5% se traduit par un mouvement de 50% sur le capital réellement engagé — dans un sens comme dans l'autre.",
+        q: "L'effet de levier en trading signifie :",
+        a: ["Emprunter pour amplifier une position, ce qui amplifie aussi les pertes", "Réduire son risque automatiquement", "Un type d'obligation d'État", "Un impôt sur les plus-values"],
+        correct: 0,
+        explanationCorrect: "Exactement : le levier amplifie mécaniquement gains ET pertes en empruntant pour investir davantage que son propre capital.",
+        explanationWrong: "Non, le levier augmente le risque, il ne le réduit jamais automatiquement. Ce n'est ni une obligation d'État ni un impôt : c'est une technique de financement qui amplifie gains et pertes.",
+      },
+      {
+        lesson: "La duration d'une obligation mesure sa sensibilité au prix face aux variations de taux d'intérêt. Plus la duration est longue, plus son prix réagit fortement à une variation des taux : si les taux montent, le prix des obligations à longue duration baisse davantage que celui des obligations à courte duration.",
+        q: "La duration d'une obligation mesure :",
+        a: ["Sa durée de vie exacte uniquement", "Sa sensibilité au prix face aux variations de taux d'intérêt", "Son rendement garanti", "Le nombre de coupons versés"],
+        correct: 1,
+        explanationCorrect: "C'est exact : la duration mesure la sensibilité du prix de l'obligation aux variations de taux d'intérêt.",
+        explanationWrong: "Non, le rendement d'une obligation n'est jamais totalement garanti, et la duration ne se limite pas à la durée de vie brute ou au nombre de coupons. Elle mesure bien la sensibilité au taux d'intérêt.",
+      },
+      {
+        lesson: "Un swap de taux d'intérêt est un contrat par lequel deux parties échangent des flux financiers : typiquement, l'une paie un taux fixe et reçoit un taux variable, l'autre fait l'inverse. Outil courant pour gérer l'exposition au risque de taux, par exemple transformer une dette à taux variable en dette à taux fixe.",
+        q: "Un swap de taux d'intérêt sert typiquement à :",
+        a: ["Échanger un flux à taux fixe contre un flux à taux variable (ou l'inverse)", "Acheter une action à prix réduit", "Payer moins d'impôts sur les dividendes", "Garantir un rendement de 0% risque"],
+        correct: 0,
+        explanationCorrect: "Exactement : le swap échange un flux à taux fixe contre un flux à taux variable (ou l'inverse), un outil de gestion du risque de taux.",
+        explanationWrong: "Non, le swap n'a aucun lien avec l'achat d'actions ou la fiscalité des dividendes, et ne garantit certainement pas un rendement sans risque (c'est lui-même un produit dérivé risqué). Il échange bien un flux fixe contre un flux variable.",
+      },
+      {
+        lesson: "Calcul simple du gain sur une option call à l'échéance : Gain net = max(0, Prix du marché − Strike) − Prime payée. Exemple pas à pas : vous achetez un call au strike de 100€ pour une prime de 5€. À l'échéance, l'action cote 115€. Gain brut = 115 − 100 = 15€. Gain net = 15€ − 5€ (prime) = 10€.",
+        q: "Vous achetez un call, strike 50€, prime payée 3€. À l'échéance, l'action cote 60€. Quel est votre gain net ?",
+        a: ["3€", "7€", "10€", "60€"],
+        correct: 1,
+        explanationCorrect: "Bon calcul : Gain brut = 60 − 50 = 10€. Gain net = 10€ − 3€ (prime) = 7€.",
+        explanationWrong: "Reprenons : Gain brut = 60 − 50 = 10€. N'oubliez pas de soustraire la prime payée : Gain net = 10€ − 3€ = 7€. Le 10€ oublie ce coût d'entrée dans l'option — une erreur fréquente.",
+      },
+    ],
+  },
+  {
+    id: 7, title: "Trading actif", subtitle: "Psychologie, risque, stratégies",
+    color: "#D4A24C",
+    modules: [
+      {
+        lesson: "Le 'position sizing' consiste à déterminer la taille d'une position (le montant investi) en fonction du risque que l'on accepte de prendre, pas seulement en fonction de sa conviction sur le trade. Règle très répandue : ne jamais risquer plus de 1 à 2% de son capital total sur une seule position.",
+        q: "Le 'position sizing' désigne :",
+        a: ["Le choix du courtier", "La détermination de la taille d'une position selon le risque accepté", "Le choix de l'heure d'ouverture du marché", "Le nombre d'écrans utilisés"],
+        correct: 1,
+        explanationCorrect: "Exactement : le position sizing calcule combien investir en fonction du risque toléré, souvent limité à 1-2% du capital par position.",
+        explanationWrong: "Non, le choix du courtier, l'heure d'ouverture ou le nombre d'écrans relèvent d'aspects logistiques distincts. Le position sizing calcule bien la taille d'une position selon le risque accepté.",
+      },
+      {
+        lesson: "Un stop-loss est un ordre automatique qui clôture une position dès qu'elle atteint un niveau de perte prédéfini, sans intervention manuelle au moment critique. Il retire l'émotion de la décision au moment où elle est la plus dangereuse, en fixant la limite de perte acceptable à l'avance.",
+        q: "Un stop-loss sert à :",
+        a: ["Garantir un gain", "Limiter automatiquement la perte en clôturant la position à un niveau défini", "Augmenter l'effet de levier", "Éviter de payer des frais de courtage"],
+        correct: 1,
+        explanationCorrect: "C'est exact : le stop-loss limite la perte à un niveau fixé à l'avance, retirant l'émotion du moment critique.",
+        explanationWrong: "Non, le stop-loss ne garantit jamais de gain, n'a aucun lien avec l'effet de levier, et ne réduit pas les frais de courtage. Il limite bien automatiquement la perte à un niveau défini.",
+      },
+      {
+        lesson: "Le RSI (Relative Strength Index) est un indicateur technique qui mesure le momentum d'un actif, gradué entre 0 et 100. Une valeur au-dessus de 70 signale traditionnellement un 'surachat', une valeur en dessous de 30 une 'survente'. Ce n'est qu'un indicateur parmi d'autres, non infaillible.",
+        q: "Le RSI (Relative Strength Index) est un indicateur qui :",
+        a: ["Mesure le momentum et identifie surachat/survente", "Calcule le bénéfice net d'une entreprise", "Prédit l'inflation future", "Mesure la dette d'un pays"],
+        correct: 0,
+        explanationCorrect: "Exactement : le RSI mesure le momentum et identifie les zones de surachat (>70) et de survente (<30).",
+        explanationWrong: "Non, le RSI n'a aucun lien avec le bénéfice net (donnée comptable), l'inflation ou la dette d'un pays (données macroéconomiques). C'est un indicateur technique de momentum.",
+      },
+      {
+        lesson: "De nombreux experts, comme Mark Douglas, insistent : le principal ennemi du trader n'est généralement pas le manque de connaissances techniques, mais ses propres émotions — la peur, l'avidité, ou l'envie de 'se refaire' après une perte. La discipline émotionnelle prime souvent sur la sophistication de la stratégie.",
+        q: "Le principal ennemi du trader selon la plupart des experts (Mark Douglas, etc.) est :",
+        a: ["Le manque d'indicateurs techniques", "Ses propres émotions et biais psychologiques (peur, avidité, revanche)", "Le manque de capital uniquement", "La lenteur d'internet"],
+        correct: 1,
+        explanationCorrect: "Exactement : la gestion émotionnelle est identifiée comme le facteur décisif par la plupart des praticiens du trading.",
+        explanationWrong: "Non, le manque d'indicateurs, de capital ou la vitesse d'internet ne sont pas identifiés comme la cause principale des échecs. Ce sont bien les émotions et biais psychologiques qui posent le plus de difficultés.",
+      },
+      {
+        lesson: "Le spread bid-ask est l'écart entre le prix d'achat proposé (bid) et le prix de vente demandé (ask) sur un marché. Plus un marché est liquide, plus ce spread a tendance à être resserré, réduisant le coût implicite pour l'investisseur.",
+        q: "Le spread bid-ask représente :",
+        a: ["L'écart entre le prix d'achat et de vente affichés sur le marché", "Une taxe gouvernementale", "Le dividende annuel", "La marge nette d'une entreprise"],
+        correct: 0,
+        explanationCorrect: "C'est exact : le spread bid-ask est l'écart de marché entre prix d'achat et de vente.",
+        explanationWrong: "Non, ce n'est ni une taxe, ni un dividende, ni la marge nette d'une entreprise. Le spread bid-ask est bien l'écart entre prix d'achat et de vente sur le marché.",
+      },
+    ],
+  },
+  {
+    id: 8, title: "Corporate finance", subtitle: "Capital, M&A, IPO",
+    color: "#6B7FB3",
+    modules: [
+      {
+        lesson: "Le WACC (coût moyen pondéré du capital) représente le taux de rendement minimum qu'une entreprise doit générer sur ses investissements pour satisfaire créanciers et actionnaires. Il mélange le coût de la dette et le coût des capitaux propres, pondérés par leur poids dans le financement total.",
+        q: "Le WACC (coût moyen pondéré du capital) sert à :",
+        a: ["Calculer l'impôt sur les sociétés", "Estimer le taux de rendement minimum exigé pour un investissement, mêlant coût de la dette et des capitaux propres", "Fixer le prix d'une action en bourse", "Mesurer l'inflation"],
+        correct: 1,
+        explanationCorrect: "Exactement : le WACC combine coût de la dette et des capitaux propres, souvent utilisé comme taux d'actualisation dans un DCF.",
+        explanationWrong: "Non, le WACC ne calcule pas directement l'impôt, ne fixe pas le prix d'une action, et n'a pas de lien direct avec l'inflation. Il estime le taux de rendement minimum exigé, mêlant dette et capitaux propres.",
+      },
+      {
+        lesson: "Une IPO (Initial Public Offering, ou introduction en bourse) est le moment où une entreprise, jusque-là privée, vend pour la première fois des actions au grand public sur un marché boursier, lui permettant de lever des capitaux importants.",
+        q: "Une IPO (Initial Public Offering) est :",
+        a: ["Le rachat d'une entreprise par ses salariés", "L'introduction en bourse d'une entreprise, avec émission d'actions au public", "Une faillite d'entreprise", "Un type d'obligation garantie"],
+        correct: 1,
+        explanationCorrect: "C'est exact : l'IPO est la première émission d'actions au public lors de l'entrée en bourse d'une entreprise.",
+        explanationWrong: "Non, ce n'est ni un rachat par les salariés, ni une faillite, ni une obligation. L'IPO est bien l'introduction en bourse avec émission d'actions au public.",
+      },
+      {
+        lesson: "La VAN (Valeur Actuelle Nette) permet de décider si un investissement crée ou détruit de la valeur. Elle actualise tous les flux de trésorerie futurs attendus, puis soustrait l'investissement initial. VAN positive = projet rentable ; VAN négative = projet à refuser.",
+        q: "La VAN (Valeur Actuelle Nette) permet de :",
+        a: ["Décider si un investissement crée de la valeur (VAN > 0) ou en détruit (VAN < 0)", "Calculer le salaire des dirigeants", "Mesurer la satisfaction client", "Fixer le taux d'imposition"],
+        correct: 0,
+        explanationCorrect: "Exactement : VAN positive signale une création de valeur, VAN négative une destruction de valeur.",
+        explanationWrong: "Non, la VAN n'a aucun lien avec les salaires, la satisfaction client ou l'imposition. Elle sert bien à juger si un investissement crée (VAN>0) ou détruit (VAN<0) de la valeur.",
+      },
+      {
+        lesson: "Une synergie, dans une fusion-acquisition, désigne la valeur additionnelle créée par la combinaison de deux entreprises : réduction de coûts, augmentation des revenus, accès à de nouvelles technologies. Argument souvent avancé pour justifier le prix d'une acquisition, parfois surestimé dans la pratique.",
+        q: "Une synergie dans une fusion-acquisition désigne :",
+        a: ["Une perte automatique de valeur", "La valeur additionnelle créée par la combinaison de deux entreprises (coûts réduits, revenus accrus)", "Un impôt supplémentaire sur la transaction", "Le prix payé pour l'acquisition"],
+        correct: 1,
+        explanationCorrect: "Exactement : la synergie est la valeur créée par la combinaison des deux entités, pas une perte automatique.",
+        explanationWrong: "Non, ce n'est ni une perte automatique, ni un impôt, ni le prix payé lui-même. La synergie est la valeur additionnelle créée par la combinaison des deux entreprises.",
+      },
+      {
+        lesson: "La due diligence est l'examen approfondi mené avant une acquisition : analyse des comptes, contrats, litiges, risques opérationnels et juridiques de la cible, pour éviter les mauvaises surprises après signature.",
+        q: "La due diligence dans une acquisition consiste à :",
+        a: ["Signer le contrat immédiatement sans vérification", "Examiner en profondeur les finances, risques et opérations de la cible avant l'achat", "Payer comptant uniquement", "Fixer le prix de l'action après l'IPO"],
+        correct: 1,
+        explanationCorrect: "C'est exact : la due diligence est cette étape de vérification approfondie avant la signature du contrat.",
+        explanationWrong: "Non, c'est l'exact opposé d'une signature immédiate sans contrôle. La due diligence examine bien en profondeur les finances, risques et opérations de la cible avant l'achat.",
+      },
+      {
+        lesson: "Calcul simplifié de VAN, pas à pas : investissement initial de 5 000€, flux futur dans 1 an de 5 500€, taux d'actualisation 10%. Valeur actuelle du flux = 5 500 / 1,10 = 5 000€. VAN = 5 000 − 5 000 = 0€.",
+        q: "Investissement initial de 5 000€, flux futur dans 1 an de 5 500€, taux d'actualisation 10%. La VAN est-elle positive ou négative ?",
+        a: ["Positive, autour de 0€", "Positive, autour de +500€", "Négative, autour de −5000€", "Impossible à déterminer"],
+        correct: 0,
+        explanationCorrect: "Bon calcul : Valeur actuelle = 5 500/1,10 = 5 000€. VAN = 5 000 − 5 000 = 0€, un projet qui rapporte tout juste le taux minimum exigé.",
+        explanationWrong: "Reprenons : Valeur actuelle du flux = 5 500 / 1,10 = 5 000€. VAN = 5 000 − 5 000 = 0€. Ce n'est ni franchement positif à +500€, ni négatif : c'est un cas limite où la VAN est quasiment nulle.",
+      },
+    ],
+  },
+  {
+    id: 9, title: "Gestion d'actifs & PE", subtitle: "Portefeuille, hedge funds, LBO",
+    color: "#B36B8F",
+    modules: [
+      {
+        lesson: "La théorie moderne du portefeuille, développée par Harry Markowitz (prix Nobel d'économie), a démontré mathématiquement que l'on peut réduire le risque global d'un portefeuille en combinant des actifs peu corrélés entre eux, sans nécessairement sacrifier le rendement espéré.",
+        q: "La théorie moderne du portefeuille (Markowitz) montre que :",
+        a: ["Il faut investir dans un seul actif pour maximiser le rendement", "On peut réduire le risque global d'un portefeuille en combinant des actifs peu corrélés", "La diversification n'a aucun effet", "Le risque et le rendement ne sont jamais liés"],
+        correct: 1,
+        explanationCorrect: "Exactement : Markowitz a démontré que combiner des actifs peu corrélés réduit le risque global sans nécessairement sacrifier le rendement.",
+        explanationWrong: "Non, c'est l'exact opposé de miser sur un seul actif. Markowitz a justement prouvé mathématiquement l'effet de la diversification sur la réduction du risque global.",
+      },
+      {
+        lesson: "Un LBO (Leveraged Buyout) est le rachat d'une entreprise financé en grande partie par de la dette, remboursée ensuite grâce aux flux de trésorerie futurs générés par l'entreprise rachetée elle-même. C'est la stratégie phare du private equity.",
+        q: "Un LBO (Leveraged Buyout) consiste à :",
+        a: ["Acheter une entreprise principalement en capitaux propres", "Racheter une entreprise en utilisant une part importante de dette, souvent remboursée par les futurs flux de la cible", "Introduire une entreprise en bourse", "Fusionner deux banques centrales"],
+        correct: 1,
+        explanationCorrect: "C'est exact : le LBO utilise une part importante de dette, remboursée par les flux futurs de l'entreprise rachetée.",
+        explanationWrong: "Non, ce n'est ni un achat principalement en capitaux propres, ni une IPO, ni une fusion de banques centrales (qui sont des institutions publiques, pas des cibles de M&A). Le LBO utilise bien un fort effet de levier de dette.",
+      },
+      {
+        lesson: "Le capital-risque (venture capital) est une forme de private equity qui finance de jeunes entreprises à fort potentiel de croissance, mais à risque élevé. Les fonds prennent généralement des participations minoritaires, en échange de capital et souvent d'un accompagnement stratégique.",
+        q: "Le capital-risque (venture capital) finance typiquement :",
+        a: ["Des entreprises matures et rentables uniquement", "Des jeunes entreprises à fort potentiel de croissance mais risque élevé", "Des obligations d'État", "Des grandes entreprises du CAC 40"],
+        correct: 1,
+        explanationCorrect: "Exactement : le venture capital cible les jeunes entreprises à fort potentiel mais risque élevé.",
+        explanationWrong: "Non, ce n'est ni pour les entreprises matures (plutôt la cible du private equity classique), ni pour les obligations d'État, ni pour les grandes entreprises cotées. Le venture capital finance bien les jeunes entreprises à fort potentiel.",
+      },
+      {
+        lesson: "Une stratégie 'long/short' en hedge fund consiste à être acheteur (long) sur des actifs sous-évalués, et vendeur à découvert (short) sur des actifs surévalués. L'objectif est de générer un rendement relativement indépendant de la direction générale du marché.",
+        q: "Une stratégie 'long/short' en hedge fund consiste à :",
+        a: ["Acheter uniquement des actions sans jamais vendre", "Être acheteur sur des actifs jugés sous-évalués et vendeur à découvert sur ceux jugés surévalués", "Investir uniquement en obligations d'État", "Éviter tout usage de levier"],
+        correct: 1,
+        explanationCorrect: "Exactement : combiner achats sur sous-évalués et ventes à découvert sur surévalués vise un rendement indépendant de la direction du marché.",
+        explanationWrong: "Non, ce n'est pas limité aux obligations d'État, et les hedge funds long/short utilisent en général un levier significatif plutôt qu'ils ne l'évitent. La stratégie combine bien achats et ventes à découvert.",
+      },
+      {
+        lesson: "Un REIT (Real Estate Investment Trust) est une société qui possède ou finance des biens immobiliers générateurs de revenus, dont les parts se négocient en bourse comme des actions, rendant l'immobilier liquide et accessible.",
+        q: "Un REIT (Real Estate Investment Trust) permet :",
+        a: ["D'investir dans l'immobilier via un véhicule coté en bourse", "D'obtenir un prêt immobilier à taux zéro", "D'éviter tout impôt foncier", "De garantir un rendement fixe sans risque"],
+        correct: 0,
+        explanationCorrect: "C'est exact : le REIT donne accès à l'immobilier via un titre coté en bourse, liquide et accessible.",
+        explanationWrong: "Non, ce n'est ni un prêt immobilier, ni une exonération fiscale, ni un rendement garanti sans risque. Le REIT donne bien accès à l'immobilier via un véhicule coté en bourse.",
+      },
+      {
+        lesson: "Calcul du ratio de Sharpe : Sharpe = (Rendement du portefeuille − Taux sans risque) / Écart-type du portefeuille. Exemple pas à pas : rendement 15%, taux sans risque 3%, volatilité 12%. Sharpe = (15−3)/12 = 12/12 = 1.",
+        q: "Un portefeuille rapporte 15%, le taux sans risque est de 3%, et sa volatilité (écart-type) est de 12%. Quel est son ratio de Sharpe ?",
+        a: ["0,25", "1", "1,25", "12"],
+        correct: 1,
+        explanationCorrect: "Bon calcul : Sharpe = (15−3)/12 = 12/12 = 1, un ratio considéré comme correct (autour de 2, c'est très bon).",
+        explanationWrong: "Reprenons : Sharpe = (Rendement − Taux sans risque) / Écart-type = (15−3)/12 = 1. Le chiffre 12 correspond juste à l'écart-type au dénominateur, oublié en tant que division — une confusion classique.",
+      },
+    ],
+  },
+  {
+    id: 10, title: "Finance quantitative", subtitle: "Modèles, risques systémiques",
+    color: "#7A9E7E",
+    modules: [
+      {
+        lesson: "Le modèle Black-Scholes (1973) est une formule mathématique permettant d'estimer la valeur théorique d'une option, en fonction du prix de l'actif sous-jacent, du strike, du temps restant, de la volatilité et du taux sans risque. Modèle fondateur de la finance des dérivés, encore largement utilisé malgré ses limites reconnues.",
+        q: "Le modèle Black-Scholes sert à :",
+        a: ["Calculer le PIB d'un pays", "Estimer la valeur théorique d'une option", "Fixer le taux directeur d'une banque centrale", "Calculer un bilan comptable"],
+        correct: 1,
+        explanationCorrect: "Exactement : Black-Scholes est un modèle de valorisation d'options, fondateur de la finance des dérivés depuis 1973.",
+        explanationWrong: "Non, ce modèle n'a aucun lien avec le PIB, les taux directeurs ou le bilan comptable. Il estime bien la valeur théorique d'une option.",
+      },
+      {
+        lesson: "La VaR (Value at Risk) est une mesure de risque qui estime la perte potentielle maximale d'un portefeuille sur une période donnée, avec un certain niveau de confiance statistique. Exemple : une VaR à 95% sur 1 jour de 1 million d'euros signifie 5% de chances de perdre plus d'1 million ce jour-là.",
+        q: "La VaR (Value at Risk) mesure :",
+        a: ["Le bénéfice garanti d'un portefeuille", "La perte potentielle maximale estimée sur une période donnée avec un certain niveau de confiance", "Le rendement moyen historique uniquement", "Le nombre d'actions détenues"],
+        correct: 1,
+        explanationCorrect: "C'est exact : la VaR estime une perte potentielle maximale avec un niveau de confiance statistique donné.",
+        explanationWrong: "Non, la VaR ne garantit jamais de bénéfice (ce serait contradictoire avec la notion de risque), et ne se limite pas au rendement moyen historique. Elle estime bien une perte potentielle maximale à un niveau de confiance donné.",
+      },
+      {
+        lesson: "Le trading haute fréquence (HFT) se caractérise par des transactions exécutées en microsecondes, via des algorithmes sophistiqués et une infrastructure technique très poussée. Domaine dominé par des acteurs institutionnels aux moyens considérables.",
+        q: "Le trading haute fréquence (HFT) se caractérise par :",
+        a: ["Des transactions exécutées en microsecondes via des algorithmes", "Des investissements tenus pendant plusieurs décennies", "L'absence totale d'ordinateurs", "Un usage exclusivement réservé aux particuliers"],
+        correct: 0,
+        explanationCorrect: "Exactement : le HFT repose sur une exécution ultra-rapide via des algorithmes sophistiqués.",
+        explanationWrong: "Non, c'est l'opposé d'un investissement de long terme, et le HFT dépend massivement des ordinateurs, réservé en pratique aux acteurs institutionnels, pas aux particuliers.",
+      },
+      {
+        lesson: "La crise financière de 2008 a été notamment déclenchée par l'effondrement du marché américain des crédits 'subprimes', massivement titrisés puis revendus dans le monde entier. Quand les défauts se sont multipliés, la crise s'est propagée à l'ensemble du système financier mondial.",
+        q: "La crise de 2008 a notamment été déclenchée par :",
+        a: ["Une hausse soudaine des taux d'intérêt en Chine", "L'effondrement du marché des subprimes et des produits titrisés adossés à ces crédits", "Une pénurie de pétrole", "Un krach sur les cryptomonnaies"],
+        correct: 1,
+        explanationCorrect: "Exactement : l'effondrement des subprimes et leur titrisation massive ont propagé la crise mondialement.",
+        explanationWrong: "Non, ni la Chine, ni le pétrole, ni les cryptomonnaies (qui n'existaient pas encore significativement, le Bitcoin datant de 2009) n'ont déclenché cette crise. C'est bien l'effondrement des subprimes titrisés qui en est la cause principale.",
+      },
+      {
+        lesson: "Les accords de Bâle III, adoptés en réponse à la crise de 2008, imposent aux banques des exigences renforcées de fonds propres et de liquidité, afin de limiter le risque systémique — le risque qu'une défaillance bancaire se propage à l'ensemble du système financier.",
+        q: "La régulation Bâle III impose notamment aux banques :",
+        a: ["De ne détenir aucun capital propre", "Des exigences de fonds propres et de liquidité renforcées pour limiter le risque systémique", "D'investir uniquement en actions", "De supprimer les prêts aux entreprises"],
+        correct: 1,
+        explanationCorrect: "C'est exact : Bâle III renforce les exigences de fonds propres et de liquidité pour limiter le risque systémique.",
+        explanationWrong: "Non, c'est l'inverse d'une absence de capital propre, et les banques continuent de prêter, avec des coussins de sécurité renforcés. Bâle III impose bien des exigences renforcées de fonds propres et de liquidité.",
+      },
+    ],
+  },
+  {
+    id: 11, title: "Vision d'ensemble", subtitle: "Géopolitique, cycles de dette, synthèse",
+    color: "#D4AF37",
+    modules: [
+      {
+        lesson: "Selon Ray Dalio, les grands cycles de dette à long terme (50 à 100 ans) se terminent généralement par un désendettement combinant plusieurs mécanismes : inflation, restructuration de dette, austérité budgétaire, et parfois transferts de richesse. Aucun mécanisme seul n'est en général suffisant.",
+        q: "Selon Ray Dalio, un 'grand cycle de dette à long terme' se termine généralement par :",
+        a: ["Une croissance infinie sans ajustement", "Un désendettement via inflation, restructuration de dette, austérité ou une combinaison des trois", "L'abolition totale de la monnaie", "Une hausse permanente des taux à zéro"],
+        correct: 1,
+        explanationCorrect: "Exactement : le désendettement combine généralement inflation, restructuration et austérité.",
+        explanationWrong: "Non, il n'y a jamais eu de 'croissance infinie sans ajustement' historiquement observée, et l'abolition totale d'une monnaie reste un événement rare et extrême. Le désendettement combine bien plusieurs mécanismes.",
+      },
+      {
+        lesson: "Le statut de monnaie de réserve mondiale (occupé aujourd'hui par le dollar) confère une capacité accrue à emprunter et à influencer le système financier international. Ce statut n'est pas figé : la livre sterling l'a occupé avant le dollar.",
+        q: "Le statut de monnaie de réserve mondiale (ex : le dollar) confère notamment :",
+        a: ["Aucun avantage particulier", "Une capacité accrue à emprunter et à influencer le système financier mondial", "L'obligation d'avoir un déficit nul", "Une interdiction d'exporter des capitaux"],
+        correct: 1,
+        explanationCorrect: "C'est exact : ce statut confère un avantage réel d'emprunt et d'influence financière mondiale.",
+        explanationWrong: "Non, ce statut n'impose ni déficit nul (les États-Unis en ont un important), ni interdiction d'exporter des capitaux. Il confère bien une capacité accrue à emprunter et à influencer le système financier mondial.",
+      },
+      {
+        lesson: "La titrisation transforme un ensemble de créances (crédits immobiliers, prêts auto) en titres financiers négociables, vendus à des investisseurs. Technique qui a aussi joué un rôle central dans la propagation de la crise de 2008.",
+        q: "La titrisation consiste à :",
+        a: ["Transformer un ensemble de créances (ex : crédits) en titres financiers négociables", "Émettre uniquement des actions ordinaires", "Supprimer une dette sans remboursement", "Fixer le taux d'intérêt d'une banque centrale"],
+        correct: 0,
+        explanationCorrect: "Exactement : la titrisation transforme des créances en titres négociables vendus aux investisseurs.",
+        explanationWrong: "Non, ce n'est ni l'émission d'actions, ni la suppression d'une dette, ni la fixation des taux directeurs. La titrisation transforme bien des créances en titres financiers négociables.",
+      },
+      {
+        lesson: "Un risque systémique est un risque qui peut se propager à l'ensemble du système financier et menacer son fonctionnement global. C'est ce type de risque que les régulateurs (Bâle III, stress tests) cherchent à limiter depuis 2008.",
+        q: "Un risque systémique est un risque qui :",
+        a: ["Ne concerne qu'une seule petite entreprise isolée", "Peut se propager à l'ensemble du système financier et menacer son fonctionnement global", "N'existe qu'en théorie", "Concerne uniquement les cryptomonnaies"],
+        correct: 1,
+        explanationCorrect: "C'est exact : le risque systémique se propage au-delà d'un seul acteur, à l'ensemble du système financier.",
+        explanationWrong: "Non, ce risque est bien réel (crise de 2008) et ne concerne pas que les cryptomonnaies — un concept bien plus ancien et large. Il se propage à l'ensemble du système, pas à un seul acteur isolé.",
+      },
+      {
+        lesson: "Ce qui distingue le plus souvent un expert reconnu d'un simple lecteur de livres, c'est la mise en pratique répétée sur plusieurs cycles économiques complets, avec un vrai retour d'expérience. La théorie construit les fondations, mais c'est l'expérience qui affine le jugement.",
+        q: "Ce qui distingue le plus souvent un expert reconnu d'un simple lecteur de livres de finance :",
+        a: ["Le nombre de livres lus uniquement", "La mise en pratique répétée, sur plusieurs cycles économiques, avec un vrai retour d'expérience", "La chance uniquement", "Le fait de ne jamais se tromper"],
+        correct: 1,
+        explanationCorrect: "Exactement : c'est l'expérience pratique accumulée sur plusieurs cycles économiques qui construit un vrai jugement.",
+        explanationWrong: "Non, la chance seule n'explique pas la constance des meilleurs praticiens, et même les plus grands experts se trompent régulièrement. C'est bien la pratique répétée sur plusieurs cycles qui fait la différence.",
+      },
+    ],
+  },
+];
+
+const FORMULAS = [
+  { cat: "Finance personnelle", name: "Patrimoine net", formula: "Patrimoine net = Actifs − Passifs" },
+  { cat: "Finance personnelle", name: "Intérêt composé", formula: "VF = VP × (1 + r)^n" },
+  { cat: "Finance personnelle", name: "Intérêt simple", formula: "Intérêt = Capital × Taux × Durée" },
+  { cat: "Finance personnelle", name: "Taux d'endettement", formula: "Taux = Mensualités crédit / Revenus mensuels" },
+  { cat: "Finance personnelle", name: "Capacité d'épargne", formula: "Épargne = Revenus − Dépenses" },
+  { cat: "Comptabilité", name: "Marge nette", formula: "Marge nette = Bénéfice net / Chiffre d'affaires (CA)" },
+  { cat: "Comptabilité", name: "Marge brute", formula: "Marge brute = (CA − Coût des ventes) / CA" },
+  { cat: "Comptabilité", name: "Équation du bilan", formula: "Actif = Passif + Capitaux propres" },
+  { cat: "Comptabilité", name: "BFR (Besoin en Fonds de Roulement)", formula: "BFR = Stocks + Créances clients − Dettes fournisseurs" },
+  { cat: "Comptabilité", name: "EBITDA", formula: "EBITDA = Résultat d'exploitation + Amortissements & provisions" },
+  { cat: "Comptabilité", name: "Ratio de liquidité générale", formula: "Ratio = Actif circulant / Passif circulant" },
+  { cat: "Comptabilité", name: "Ratio d'endettement (entreprise)", formula: "Ratio = Dette totale / Capitaux propres" },
+  { cat: "Analyse & valorisation", name: "PER", formula: "PER = Prix de l'action / Bénéfice par action" },
+  { cat: "Analyse & valorisation", name: "ROE", formula: "ROE = Bénéfice net / Capitaux propres" },
+  { cat: "Analyse & valorisation", name: "ROA", formula: "ROA = Bénéfice net / Total des actifs" },
+  { cat: "Analyse & valorisation", name: "ROIC", formula: "ROIC = Résultat opérationnel après impôt / Capital investi" },
+  { cat: "Analyse & valorisation", name: "DCF (valeur actuelle)", formula: "VA = Σ [ CFₜ / (1+r)^t ]" },
+  { cat: "Analyse & valorisation", name: "Valeur d'entreprise (EV)", formula: "EV = Capitalisation boursière + Dette nette" },
+  { cat: "Analyse & valorisation", name: "Multiple EV/EBITDA", formula: "Multiple = Valeur d'entreprise / EBITDA" },
+  { cat: "Analyse & valorisation", name: "Price-to-Book (P/B)", formula: "P/B = Prix de l'action / Valeur comptable par action" },
+  { cat: "Corporate finance", name: "VAN", formula: "VAN = Σ [ CFₜ / (1+r)^t ] − Investissement initial" },
+  { cat: "Corporate finance", name: "WACC", formula: "WACC = (E/V)×Ke + (D/V)×Kd×(1−T)" },
+  { cat: "Corporate finance", name: "TRI (Taux de Rendement Interne)", formula: "TRI = taux r tel que VAN(r) = 0" },
+  { cat: "Corporate finance", name: "Ratio de couverture des intérêts", formula: "Ratio = EBIT / Charges d'intérêts" },
+  { cat: "Marchés & trading", name: "Rendement d'un dividende", formula: "Rendement = Dividende annuel / Prix de l'action" },
+  { cat: "Marchés & trading", name: "Ratio risque/rendement", formula: "Ratio = (Objectif de gain) / (Perte potentielle)" },
+  { cat: "Marchés & trading", name: "Rendement d'un investissement", formula: "Rendement % = (Valeur finale − Valeur initiale) / Valeur initiale" },
+  { cat: "Gestion de portefeuille", name: "Ratio de Sharpe", formula: "Sharpe = (Rp − Rf) / σp" },
+  { cat: "Gestion de portefeuille", name: "Bêta d'un actif", formula: "β = Covariance(actif, marché) / Variance(marché)" },
+  { cat: "Private equity", name: "Multiple sur capital investi (MOIC)", formula: "MOIC = Valeur de sortie / Capital investi" },
+  { cat: "Private equity", name: "Effet de levier d'un LBO", formula: "Levier = Dette / (Dette + Capitaux propres investis)" },
+  { cat: "Crédit & créances", name: "Délai moyen de paiement clients", formula: "Délai = (Créances clients / CA) × 365 jours" },
+  { cat: "Crédit & créances", name: "Taux d'intérêt effectif global (TAEG)", formula: "TAEG ≈ Taux nominal + Frais annexes du crédit" },
+  { cat: "Finance quantitative", name: "Black-Scholes (simplifié)", formula: "C = S·N(d1) − K·e^(−rt)·N(d2)" },
+  { cat: "Finance quantitative", name: "Value at Risk (VaR)", formula: "VaR = Valeur du portefeuille × σ × Z(confiance)" },
+  { cat: "Macroéconomie", name: "Taux réel", formula: "Taux réel ≈ Taux nominal − Inflation" },
+  { cat: "Macroéconomie", name: "PIB par habitant", formula: "PIB/habitant = PIB total / Population" },
+];
+
+const BADGES = [
+  { threshold: 1, label: "Premier pas", icon: "🌱" },
+  { threshold: 3, label: "Apprenti", icon: "📘" },
+  { threshold: 6, label: "Analyste junior", icon: "📊" },
+  { threshold: 9, label: "Stratège", icon: "♟️" },
+  { threshold: 12, label: "Expert", icon: "🏆" },
+];
+
+const NEWS_SAMPLE = [
+  {
+    tag: "Taux",
+    text: "Les banques centrales ajustent régulièrement leurs taux directeurs selon l'inflation observée.",
+    explain: "En clair : quand les prix montent trop vite (inflation), les banques centrales augmentent souvent leurs taux pour freiner le crédit et calmer la demande. C'est le mécanisme vu au Niveau 5 (Macroéconomie) — utile pour comprendre pourquoi les taux de votre crédit ou de votre épargne évoluent.",
+  },
+  {
+    tag: "Marchés",
+    text: "Les indices actions évoluent quotidiennement selon les résultats d'entreprises, les données macro et les anticipations de marché.",
+    explain: "En clair : la bourse réagit en continu à trois types d'informations — la santé des entreprises (leurs résultats), l'état de l'économie globale, et les anticipations des investisseurs sur l'avenir. C'est pour cela qu'un même chiffre peut faire monter ou baisser un marché selon qu'il était attendu ou non.",
+  },
+  {
+    tag: "Régulation",
+    text: "Les cadres réglementaires (type Bâle III, MiFID) sont amendés périodiquement.",
+    explain: "En clair : les règles qui encadrent les banques et les marchés (comme Bâle III, vu au Niveau 10) évoluent régulièrement pour s'adapter aux nouveaux risques identifiés — souvent après une crise, comme celle de 2008.",
+  },
+];
+
+/* ============================ NOUVELLES DONNÉES ========================= */
+
+const LEVEL_ICONS = ["🪙","🐷","🏛️","📈","🔍","🌍","⚡","🔥","💼","🗂️","📊","🧭"];
+
+const LEAGUES = [
+  { min: 0, label: "Bronze", color: "#B08D57", icon: "🥉" },
+  { min: 150, label: "Argent", color: "#B8C4D0", icon: "🥈" },
+  { min: 400, label: "Or", color: "#D4AF37", icon: "🥇" },
+  { min: 800, label: "Diamant", color: "#7EC8E3", icon: "💎" },
+];
+
+const GLOSSARY = [
+  { term: "Actif", def: "Ce qu'une personne ou une entreprise possède (argent, biens, placements)." },
+  { term: "Passif", def: "Ce qu'une personne ou une entreprise doit (dettes, crédits)." },
+  { term: "Bénéfice net", def: "Ce qu'il reste après avoir payé toutes les charges d'une entreprise." },
+  { term: "Dividende", def: "Part des bénéfices qu'une entreprise reverse à ses actionnaires." },
+  { term: "Obligation", def: "Un prêt fait à une entreprise ou un État, contre un intérêt régulier." },
+  { term: "Action", def: "Une part de propriété d'une entreprise." },
+  { term: "ETF", def: "Un fonds coté en bourse qui réplique un indice ou un panier d'actifs." },
+  { term: "PER", def: "Ratio Prix de l'action / Bénéfice par action, mesure de valorisation boursière." },
+  { term: "ROE", def: "Rentabilité des capitaux propres : bénéfice net rapporté aux capitaux propres." },
+  { term: "DCF", def: "Méthode de valorisation d'entreprise par actualisation des flux de trésorerie futurs." },
+  { term: "VAN", def: "Valeur Actuelle Nette : indique si un investissement crée (>0) ou détruit (<0) de la valeur." },
+  { term: "WACC", def: "Coût moyen pondéré du capital, taux de rendement minimum exigé par une entreprise." },
+  { term: "Levier", def: "Le fait d'emprunter pour amplifier une position, ce qui amplifie gains ET pertes." },
+  { term: "Stop-loss", def: "Ordre automatique qui limite une perte en clôturant une position à un niveau défini." },
+  { term: "LBO", def: "Rachat d'une entreprise financé en grande partie par de la dette (private equity)." },
+  { term: "VaR", def: "Value at Risk : estimation statistique de la perte potentielle maximale d'un portefeuille." },
+  { term: "Titrisation", def: "Transformation d'un ensemble de créances en titres financiers négociables." },
+  { term: "Moat", def: "Avantage concurrentiel durable qui protège une entreprise de la concurrence." },
+  { term: "Duration", def: "Sensibilité du prix d'une obligation aux variations de taux d'intérêt." },
+  { term: "Spread bid-ask", def: "Écart entre le prix d'achat et le prix de vente affichés sur un marché." },
+  { term: "Chiffre d'affaires (CA)", def: "Total des ventes réalisées par une entreprise sur une période, avant déduction des charges." },
+  { term: "Budget", def: "Prévision chiffrée des revenus et dépenses sur une période donnée, personnelle ou d'entreprise." },
+  { term: "Créance", def: "Somme d'argent qu'une entité (personne ou entreprise) doit recevoir d'un tiers (ex : client qui n'a pas encore payé)." },
+  { term: "Crédit", def: "Somme d'argent prêtée par une banque ou un organisme, à rembourser avec intérêts sur une durée définie." },
+  { term: "Investissement", def: "Engagement d'argent aujourd'hui dans le but d'obtenir un revenu ou une plus-value dans le futur." },
+  { term: "Private equity", def: "Investissement en capital dans des entreprises non cotées en bourse, souvent via LBO ou capital-risque." },
+  { term: "Capital-risque (Venture Capital)", def: "Financement de jeunes entreprises à fort potentiel de croissance mais à risque élevé." },
+  { term: "EBITDA", def: "Bénéfice avant intérêts, impôts, dépréciation et amortissement — mesure de la rentabilité opérationnelle." },
+  { term: "BFR", def: "Besoin en Fonds de Roulement : argent qu'une entreprise doit avancer pour financer son cycle d'exploitation." },
+  { term: "Trésorerie", def: "Argent immédiatement disponible sur les comptes d'une entreprise ou d'une personne." },
+  { term: "Amortissement", def: "Répartition comptable du coût d'un actif durable sur sa durée de vie utile." },
+  { term: "Provision", def: "Somme mise de côté par une entreprise pour couvrir un risque ou une charge future probable." },
+  { term: "Capitaux propres", def: "Ressources appartenant aux actionnaires : capital apporté + bénéfices non distribués." },
+  { term: "Dette nette", def: "Dette totale d'une entreprise, moins sa trésorerie disponible." },
+  { term: "Effet de levier", def: "Utilisation de la dette pour amplifier le rendement (et le risque) d'un investissement." },
+  { term: "Liquidité", def: "Facilité avec laquelle un actif peut être converti en argent rapidement, sans perte de valeur importante." },
+  { term: "Solvabilité", def: "Capacité d'une entreprise ou d'une personne à honorer l'ensemble de ses dettes, même en cas de liquidation." },
+  { term: "Taux directeur", def: "Taux d'intérêt fixé par une banque centrale, qui influence tous les autres taux de l'économie." },
+  { term: "Inflation", def: "Hausse générale et durable des prix, qui réduit le pouvoir d'achat de la monnaie." },
+  { term: "Récession", def: "Période de recul de l'activité économique, généralement définie par deux trimestres consécutifs de baisse du PIB." },
+  { term: "IPO", def: "Introduction en bourse : première vente d'actions d'une entreprise au grand public." },
+  { term: "M&A (Fusions-acquisitions)", def: "Opérations de rapprochement, rachat ou fusion entre entreprises." },
+  { term: "Due diligence", def: "Examen approfondi des comptes et risques d'une entreprise avant une acquisition." },
+  { term: "Synergie", def: "Valeur additionnelle créée par la combinaison de deux entreprises lors d'une fusion-acquisition." },
+  { term: "Hedge fund", def: "Fonds d'investissement utilisant des stratégies avancées (levier, vente à découvert) pour générer du rendement." },
+  { term: "REIT", def: "Société cotée en bourse qui investit dans l'immobilier générateur de revenus." },
+  { term: "Diversification", def: "Répartition d'un investissement entre plusieurs actifs différents pour réduire le risque global." },
+  { term: "Portefeuille", def: "Ensemble des placements (actions, obligations, etc.) détenus par un investisseur." },
+  { term: "Volatilité", def: "Amplitude des variations de prix d'un actif ; plus elle est élevée, plus le risque perçu est grand." },
+  { term: "Capitalisation boursière", def: "Valeur totale d'une entreprise en bourse : prix de l'action × nombre d'actions en circulation." },
+  { term: "Multiple de valorisation", def: "Ratio (comme le PER ou l'EV/EBITDA) utilisé pour comparer la valorisation de plusieurs entreprises." },
+  { term: "Rating (notation de crédit)", def: "Évaluation par une agence (S&P, Moody's...) du risque de défaut d'un émetteur de dette." },
+  { term: "Défaut de paiement", def: "Incapacité d'un emprunteur à rembourser sa dette aux conditions prévues." },
+  { term: "Actionnaire", def: "Personne ou entité qui détient une ou plusieurs actions d'une entreprise." },
+  { term: "Créancier", def: "Personne ou entité à qui de l'argent est dû (ex : détenteur d'une obligation, banque prêteuse)." },
+];
+
+/* Simulateur d'entretien — questions type "mise en situation", débloqué après le niveau Corporate finance */
+const INTERVIEW_LEVEL = {
+  id: "interview", title: "Simulateur d'entretien", subtitle: "Questions type entretien finance", color: "#5C5F66",
+  modules: [
+    {
+      lesson: "Mise en situation : en entretien pour un poste d'analyste, on vous demande souvent d'expliquer un concept simplement, pas de réciter une définition. Exemple de question classique : 'Expliquez-moi ce qu'est le BFR (Besoin en Fonds de Roulement) comme si je n'y connaissais rien.' Le BFR représente l'argent qu'une entreprise doit avancer pour financer son cycle d'exploitation (stocks, créances clients) avant d'être payée par ses clients, diminué de ce qu'elle doit elle-même à ses fournisseurs.",
+      q: "Un recruteur vous demande : 'Pourquoi une entreprise rentable peut-elle quand même manquer de trésorerie ?' Quelle réponse est la plus juste ?",
+      a: ["C'est impossible, une entreprise rentable a toujours du cash", "À cause du décalage entre bénéfice comptable et encaissement réel (BFR, amortissements, délais clients)", "Uniquement si elle triche sur ses comptes", "Parce que la rentabilité n'existe pas vraiment"],
+      correct: 1,
+      explanationCorrect: "Bonne réponse pour un entretien : vous montrez que vous comprenez la différence entre bénéfice comptable et cash réel — exactement la notion vue au Niveau Comptabilité (amortissement, décalage de paiement, BFR).",
+      explanationWrong: "En entretien, cette réponse manquerait de précision. La bonne réponse mobilise la distinction bénéfice comptable / cash réel : délais de paiement clients, charges non-cash comme l'amortissement, et BFR à financer.",
+    },
+    {
+      lesson: "Question fréquente en entretien corporate finance/M&A : 'Quelle méthode de valorisation utiliseriez-vous pour une startup non rentable ?' Pour une entreprise sans bénéfices, le PER (basé sur le bénéfice) est peu pertinent. On privilégie souvent des multiples de chiffre d'affaires, ou un DCF basé sur des flux futurs projetés, en acceptant une forte incertitude sur les hypothèses.",
+      q: "Pour valoriser une startup non rentable, quelle approche est la plus adaptée ?",
+      a: ["Le PER, toujours, quelle que soit la situation", "Un DCF ou un multiple de chiffre d'affaires, car le bénéfice n'est pas encore pertinent", "Il est impossible de valoriser une startup", "Uniquement le prix payé par le dernier investisseur"],
+      correct: 1,
+      explanationCorrect: "Exactement la réponse attendue en entretien : le PER perd son sens sans bénéfice positif, on utilise alors un DCF ou des multiples de revenus, en assumant l'incertitude des projections.",
+      explanationWrong: "Le PER nécessite un bénéfice positif pour avoir un sens, ce qui exclut son usage direct ici. La réponse attendue en entretien : DCF ou multiples de chiffre d'affaires, tout en reconnaissant l'incertitude des hypothèses.",
+    },
+    {
+      lesson: "Question de culture générale financière, fréquente en entretien : 'Que s'est-il passé en 2008 ?' Une bonne réponse structure la chronologie : crédits subprimes à risque, titrisation massive de ces crédits, propagation du risque dans le système bancaire mondial, puis crise de liquidité et de confiance généralisée.",
+      q: "En entretien, quelle réponse structurée sur la crise de 2008 est la plus solide ?",
+      a: ["'C'était juste la faute des banques, sans plus de détails'", "Subprimes à risque → titrisation massive → propagation du risque → crise de confiance et de liquidité", "Une hausse du prix du pétrole a tout déclenché", "Personne ne sait vraiment ce qui s'est passé"],
+      correct: 1,
+      explanationCorrect: "C'est la structure de réponse attendue : elle montre une compréhension du mécanisme complet, pas juste une accusation vague — exactement ce que revoit le Niveau Finance quantitative.",
+      explanationWrong: "Une réponse vague ('la faute des banques') ou fausse (pétrole) ne convaincra pas un recruteur. La structure solide : subprimes à risque → titrisation → propagation → crise de confiance.",
+    },
+    {
+      lesson: "Question classique de 'brain teaser' financier en entretien : 'Si le PER d'une entreprise est de 25 alors que la moyenne du secteur est de 12, qu'est-ce que cela peut signifier ?' Plusieurs explications possibles : le marché anticipe une forte croissance future, l'action est simplement surévaluée, ou l'entreprise a un avantage concurrentiel (moat) qui justifie une prime. Un bon candidat évoque plusieurs hypothèses plutôt qu'une seule certitude.",
+      q: "Un PER largement supérieur à la moyenne du secteur peut signifier :",
+      a: ["Rien, c'est toujours une erreur de calcul", "Une anticipation de forte croissance, une survalorisation, ou un avantage concurrentiel fort", "Que l'entreprise va forcément faire faillite", "Que le secteur entier est en crise"],
+      correct: 1,
+      explanationCorrect: "Bonne réponse nuancée, celle qu'un recruteur apprécie : plusieurs hypothèses sont possibles (croissance anticipée, survalorisation, moat solide) plutôt qu'une explication unique et tranchée.",
+      explanationWrong: "Éviter les réponses trop tranchées en entretien. Un PER élevé peut refléter plusieurs choses : anticipation de croissance, survalorisation, ou avantage concurrentiel — pas une erreur de calcul ni un signe automatique de faillite.",
+    },
+  ],
+};
+
+/* Étude de cas guidée — débloquée après validation des 12 niveaux */
+const CASE_STUDY_LEVEL = {
+  id: "case", title: "Étude de cas — Bilan simplifié", subtitle: "Mets tout ce que tu as appris en pratique", color: "#D4AF37",
+  modules: [
+    {
+      lesson: "Voici le bilan et le compte de résultat très simplifiés d'une petite entreprise fictive, 'Atelier Nord', pour l'année écoulée :\n\n— Chiffre d'affaires : 800 000€\n— Charges totales : 720 000€\n— Capitaux propres : 400 000€\n— Actif total : 900 000€\n— Passif (dettes) : 500 000€\n— Prix de l'action en bourse : 45€, pour un bénéfice par action de 3€\n\nPrends le temps de bien noter ces chiffres : les questions suivantes vont te demander de les utiliser pour calculer plusieurs ratios vus dans ce parcours.",
+      q: "Pour commencer : le bilan est-il équilibré avec ces chiffres (Actif = Passif + Capitaux propres) ?",
+      a: ["Oui : 900 000 = 500 000 + 400 000", "Non, il manque 100 000€", "Non, il y a 100 000€ en trop", "Impossible à vérifier"],
+      correct: 1,
+      explanationCorrect: "Bonne vérification : 500 000 + 400 000 = 900 000, ce qui correspond exactement à l'actif total — le bilan est bien équilibré, comme il doit toujours l'être.",
+      explanationWrong: "Vérifions : Passif + Capitaux propres = 500 000 + 400 000 = 900 000€, ce qui correspond exactement à l'Actif total (900 000€). Le bilan EST donc équilibré — c'était un piège pour vérifier que tu maîtrises l'équation fondamentale du bilan.",
+    },
+    {
+      lesson: "Reprenons les chiffres d'Atelier Nord : Chiffre d'affaires 800 000€, charges totales 720 000€. Rappel de la formule : Bénéfice net = Chiffre d'affaires − Charges totales, puis Marge nette = Bénéfice net / Chiffre d'affaires.",
+      q: "Quelle est la marge nette d'Atelier Nord ?",
+      a: ["5%", "9%", "10%", "90%"],
+      correct: 2,
+      explanationCorrect: "Exact : Bénéfice net = 800 000 − 720 000 = 80 000€. Marge nette = 80 000 / 800 000 = 10%.",
+      explanationWrong: "Reprenons : Bénéfice net = 800 000 − 720 000 = 80 000€. Marge nette = 80 000 / 800 000 = 10%. Une marge nette de 10% est considérée comme correcte dans la plupart des secteurs.",
+    },
+    {
+      lesson: "Rappel des chiffres : Capitaux propres 400 000€, et nous venons de calculer un bénéfice net de 80 000€. Rappel de la formule : ROE = Bénéfice net / Capitaux propres.",
+      q: "Quel est le ROE d'Atelier Nord ?",
+      a: ["8%", "20%", "40%", "80%"],
+      correct: 1,
+      explanationCorrect: "Exact : ROE = 80 000 / 400 000 = 0,20, soit 20% — un ROE plutôt solide, qui indique une bonne rentabilité pour les actionnaires.",
+      explanationWrong: "Reprenons : ROE = Bénéfice net / Capitaux propres = 80 000 / 400 000 = 20%. C'est un ROE plutôt solide pour la plupart des secteurs.",
+    },
+    {
+      lesson: "Dernier chiffre à utiliser : l'action d'Atelier Nord cote 45€ en bourse, pour un bénéfice par action de 3€. Rappel de la formule : PER = Prix de l'action / Bénéfice par action.",
+      q: "Quel est le PER d'Atelier Nord ?",
+      a: ["8", "15", "30", "135"],
+      correct: 1,
+      explanationCorrect: "Exact : PER = 45 / 3 = 15, une valorisation dans la moyenne pour beaucoup de secteurs — ni exagérément chère, ni signe évident de sous-valorisation.",
+      explanationWrong: "Reprenons : PER = Prix / Bénéfice par action = 45 / 3 = 15. Le 135 vient d'une multiplication (45×3) au lieu d'une division.",
+    },
+    {
+      lesson: "Bilan de l'étude de cas : Atelier Nord affiche une marge nette de 10%, un ROE de 20%, un PER de 15, et un bilan équilibré à 900 000€. Ces quatre chiffres, mis ensemble, permettent de se faire une première opinion sur la santé financière de l'entreprise — exactement la démarche d'un analyste financier débutant face à de vrais comptes.",
+      q: "En croisant ces 4 indicateurs (marge 10%, ROE 20%, PER 15, bilan équilibré), quelle lecture d'ensemble est la plus juste ?",
+      a: ["L'entreprise est en faillite imminente", "L'entreprise semble en bonne santé financière, avec une valorisation boursière raisonnable", "Ces chiffres ne veulent rien dire ensemble", "L'entreprise est forcément sous-évaluée"],
+      correct: 1,
+      explanationCorrect: "Bravo — c'est exactement la bonne lecture d'ensemble : rentabilité correcte (marge, ROE) et valorisation ni excessive ni bradée (PER dans la moyenne). Tu viens de faire une mini-analyse financière complète, félicitations pour être arrivé jusqu'ici dans le parcours !",
+      explanationWrong: "Rien n'indique une faillite ici (marge et ROE sont positifs et sains), et un PER de 15 est ordinaire, pas nécessairement un signe de sous-valorisation. La lecture correcte : une entreprise en bonne santé financière, avec une valorisation raisonnable.",
+    },
+  ],
+};
+
+function buildSynthesisQuiz(levels, groupIndex) {
+  const group = levels.slice(groupIndex * 3, groupIndex * 3 + 3);
+  const modules = group.flatMap(l => l.modules.slice(0, 2));
+  return {
+    id: `synth-${groupIndex}`,
+    title: `Examen de synthèse ${groupIndex + 1}`,
+    subtitle: group.map(l => l.title).join(" · "),
+    color: "#8A6FBF",
+    modules,
+  };
+}
+
+const FONT_OPTIONS = [
+  { id: 'serif', label: 'Élégant (Serif)', css: "Georgia,'Times New Roman',serif" },
+  { id: 'sans', label: 'Moderne (Sans)', css: "'Segoe UI','Helvetica Neue',Arial,sans-serif" },
+  { id: 'mono', label: 'Technique (Mono)', css: "'Courier New',Consolas,monospace" },
+  { id: 'round', label: 'Doux (Arrondi)', css: "'Trebuchet MS',Verdana,sans-serif" },
+];
+const DEFAULT_PROGRESS = {
+  xp: 0, unlocked: 1, completed: {}, best: {},
+  profile: { pseudo: '', avatar: '' },
+  theme: 'dark', font: 'serif', muted: false, chronoMode: false,
+  daily: { date: '', streak: 0, doneToday: false },
+  missedQueue: [], visits: {},
+};
+
+
+/* ============================ HELPERS ============================ */
+function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function yesterdayStr(){ const d=new Date(); d.setDate(d.getDate()-1); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function hashStr(s){ let h=0; for(let i=0;i<s.length;i++){ h=(h*31+s.charCodeAt(i))>>>0; } return h; }
+function getGreeting(){ const h=new Date().getHours(); if(h<12) return 'Bonjour'; if(h<18) return 'Bon après-midi'; return 'Bonsoir'; }
+function getLeague(xp){ return [...LEAGUES].reverse().find(l=>xp>=l.min) || LEAGUES[0]; }
+function findLevelById(id){ return LEVELS.find(l=>l.id===id); }
+function getFontCss(id){ return (FONT_OPTIONS.find(f=>f.id===id)||FONT_OPTIONS[0]).css; }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function loadProgress(){
+  try {
+    const raw = localStorage.getItem('financequest_progress_v1');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return {
+        ...DEFAULT_PROGRESS, ...parsed,
+        profile: { ...DEFAULT_PROGRESS.profile, ...(parsed.profile||{}) },
+        daily: { ...DEFAULT_PROGRESS.daily, ...(parsed.daily||{}) },
+        visits: parsed.visits || {},
+      };
+    }
+  } catch(e) {}
+  return JSON.parse(JSON.stringify(DEFAULT_PROGRESS));
+}
+function saveProgress(){
+  try { localStorage.setItem('financequest_progress_v1', JSON.stringify(P)); } catch(e) {}
+}
+
+let _audioCtx = null;
+function getAudioCtx(){ try { if(!_audioCtx) _audioCtx = new (window.AudioContext||window.webkitAudioContext)(); return _audioCtx; } catch(e){ return null; } }
+function playTone(freq, dur, type, delay, vol){
+  const ctx = getAudioCtx(); if(!ctx) return;
+  try {
+    const osc = ctx.createOscillator(); const gain = ctx.createGain();
+    osc.type = type||'sine'; osc.frequency.value = freq; gain.gain.value = vol||0.08;
+    osc.connect(gain); gain.connect(ctx.destination);
+    const t0 = ctx.currentTime + (delay||0);
+    osc.start(t0);
+    gain.gain.setValueAtTime(vol||0.08, t0);
+    gain.gain.exponentialRampToValueAtTime(0.001, t0+dur);
+    osc.stop(t0+dur);
+  } catch(e) {}
+}
+function playCorrectSound(){ if(!P.muted){ playTone(660,.12); playTone(880,.15,'sine',.1); } }
+function playWrongSound(){ if(!P.muted) playTone(180,.25,'square',0,.05); }
+function playLevelUpSound(){ if(P.muted) return; [523,659,784,1047].forEach((f,i)=>playTone(f,.18,'triangle',i*.1,.07)); }
+
+function fireConfetti(){
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:50;';
+  const colors = ['#D4AF37','#8AA876','#B85C5C','#5B8DB8','#B36B8F'];
+  for(let i=0;i<26;i++){
+    const p = document.createElement('span');
+    const left = Math.random()*100, delay=Math.random()*.3, dur=1.1+Math.random()*.7, rot=Math.random()*360;
+    p.style.cssText = `position:absolute;top:-10px;left:${left}%;width:6px;height:10px;background:${colors[i%colors.length]};opacity:.9;animation:confettiFall ${dur}s ease-in ${delay}s forwards;transform:rotate(${rot}deg);`;
+    wrap.appendChild(p);
+  }
+  document.getElementById('app').appendChild(wrap);
+  setTimeout(()=>wrap.remove(), 1900);
+}
+
+function recordVisit(pseudo){
+  if(!pseudo) return;
+  const today = todayStr();
+  P.visits = P.visits || {};
+  P.visits[pseudo] = P.visits[pseudo] || [];
+  if (!P.visits[pseudo].includes(today)) P.visits[pseudo].push(today);
+  saveProgress();
+}
+
+/* ============================ ÉTAT GLOBAL ============================ */
+let P = loadProgress();
+let S = {
+  view: 'splash', activeLevel: null, mIndex: 0, stage: 'lesson', selected: null,
+  sessionScore: 0, scoredModules: {}, streak: 0, lessonDone: false, attempts: 0,
+  lives: 5, timeLeft: null, bonusXP: 0,
+  glossaryQuery: '', flashIdx: 0, flashFlipped: false,
+  chronoTimerId: null, typeTimerId: null,
+  logoTapCount: 0, logoTapLast: 0,
+};
+const AVATARS = ['🦉','🐺','🦊','🐯','🦅','🐢','🦁','🐬'];
+
+function setView(v){ S.view = v; render(); }
+
+/* ============================ ACTIONS ============================ */
+function startLevel(level){
+  S.activeLevel = level; S.mIndex = 0; S.stage = 'lesson'; S.selected = null;
+  S.sessionScore = 0; S.scoredModules = {}; S.streak = 0; S.lessonDone = false;
+  S.attempts = 0; S.lives = 5; S.bonusXP = 0; S.timeLeft = null;
+  clearInterval(S.chronoTimerId);
+  S.view = 'quiz';
+  render();
+}
+function startLevelById(kind, idOrGroup){
+  if (kind === 'level') startLevel(LEVELS[idOrGroup]);
+  else if (kind === 'synth') startLevel(buildSynthesisQuiz(LEVELS, Number(idOrGroup)));
+  else if (kind === 'interview') startLevel(INTERVIEW_LEVEL);
+  else if (kind === 'case') startLevel(CASE_STUDY_LEVEL);
+  else if (kind === 'revision') startRevision();
+}
+function goToQuestion(){
+  S.stage = 'question'; S.attempts = 0;
+  if (P.chronoMode) startChronoTimer(20); else S.timeLeft = null;
+  render();
+}
+function startChronoTimer(seconds){
+  S.timeLeft = seconds;
+  clearInterval(S.chronoTimerId);
+  S.chronoTimerId = setInterval(() => {
+    S.timeLeft -= 1;
+    if (S.timeLeft <= 0) {
+      clearInterval(S.chronoTimerId);
+      answer(-1);
+      return;
+    }
+    const el = document.getElementById('chronoNum');
+    const fill = document.getElementById('chronoFill');
+    if (el) el.textContent = S.timeLeft + 's';
+    if (fill) fill.style.width = (S.timeLeft/20*100) + '%';
+  }, 1000);
+}
+function reviewLesson(){
+  clearInterval(S.chronoTimerId);
+  S.stage = 'lesson'; S.selected = null; S.lessonDone = false;
+  render();
+}
+function retryQuestion(){
+  S.stage = 'question'; S.selected = null;
+  if (P.chronoMode) startChronoTimer(20);
+  render();
+}
+function restartLevel(){ startLevel(S.activeLevel); }
+function quitToMap(){ clearInterval(S.chronoTimerId); S.view = 'map'; render(); }
+
+function answer(i){
+  if (S.selected !== null) return;
+  clearInterval(S.chronoTimerId);
+  S.selected = i;
+  const m = S.activeLevel.modules[S.mIndex];
+  S.attempts += 1;
+  const isCorrect = i === m.correct;
+  if (isCorrect) {
+    if (!S.scoredModules[S.mIndex]) { S.sessionScore += 1; S.scoredModules[S.mIndex] = true; }
+    S.streak += 1;
+    playCorrectSound();
+    if (P.chronoMode && S.timeLeft !== null && S.timeLeft >= 10) S.bonusXP += 5;
+    if (typeof S.activeLevel.id === 'number') {
+      P.missedQueue = (P.missedQueue||[]).filter(it => !(it.levelId===S.activeLevel.id && it.moduleIndex===S.mIndex));
+      saveProgress();
+    }
+  } else {
+    S.streak = 0;
+    S.lives = Math.max(0, S.lives - 1);
+    playWrongSound();
+    if (typeof S.activeLevel.id === 'number') {
+      const exists = (P.missedQueue||[]).some(it => it.levelId===S.activeLevel.id && it.moduleIndex===S.mIndex);
+      if (!exists) { P.missedQueue = [...(P.missedQueue||[]), { levelId: S.activeLevel.id, moduleIndex: S.mIndex }]; saveProgress(); }
+    }
+  }
+  S.stage = 'explain';
+  render();
+}
+
+function nextModule(){
+  const isLast = S.mIndex === S.activeLevel.modules.length - 1;
+  if (!isLast) {
+    S.mIndex += 1; S.stage = 'lesson'; S.selected = null; S.lessonDone = false; S.attempts = 0; S.timeLeft = null;
+    render();
+    return;
+  }
+  const finalScore = S.sessionScore;
+  const total = S.activeLevel.modules.length;
+  const passed = finalScore/total >= 0.6;
+  const earnedXP = finalScore*10 + (passed?20:0) + S.bonusXP;
+
+  const nextCompleted = { ...P.completed };
+  const prevBest = nextCompleted[S.activeLevel.id]?.score || 0;
+  nextCompleted[S.activeLevel.id] = { score: Math.max(prevBest, finalScore), total, passed: passed || nextCompleted[S.activeLevel.id]?.passed };
+
+  if (passed && typeof S.activeLevel.id === 'number') {
+    P.unlocked = Math.max(P.unlocked, Math.min(S.activeLevel.id + 2, LEVELS.length));
+  }
+  if (S.activeLevel.id === 'revision') {
+    P.missedQueue = (P.missedQueue||[]).filter((_, idx) => !S.scoredModules[idx]);
+  }
+  P.completed = nextCompleted;
+  P.xp = P.xp + earnedXP;
+  saveProgress();
+
+  if (passed) { fireConfetti(); playLevelUpSound(); }
+  S.view = 'result';
+  render();
+}
+
+function resetProgress(){
+  if (!confirm('Réinitialiser toute ta progression ?')) return;
+  P = JSON.parse(JSON.stringify(DEFAULT_PROGRESS));
+  saveProgress();
+  S.view = 'map';
+  render();
+}
+function toggleTheme(){ P.theme = P.theme==='dark' ? 'light' : 'dark'; saveProgress(); render(); }
+function toggleMuted(){ P.muted = !P.muted; saveProgress(); render(); }
+function toggleChrono(){ P.chronoMode = !P.chronoMode; saveProgress(); render(); }
+function setFont(id){ P.font = id; saveProgress(); render(); }
+
+function saveProfile(){
+  const pseudo = (document.getElementById('pseudoInput').value || '').trim() || 'Apprenti financier';
+  const avatarBtn = document.querySelector('.fq-avatar-btn.active');
+  const avatar = avatarBtn ? avatarBtn.dataset.avatar : AVATARS[0];
+  P.profile = { pseudo, avatar };
+  saveProgress();
+  recordVisit(pseudo);
+  render();
+}
+function pickAvatar(a){
+  document.querySelectorAll('.fq-avatar-btn').forEach(b => b.classList.toggle('active', b.dataset.avatar === a));
+}
+
+function completeDailyChallenge(correct, qIndex){
+  const today = todayStr();
+  let streakN = P.daily.streak;
+  if (P.daily.date === yesterdayStr()) streakN += 1;
+  else if (P.daily.date !== today) streakN = 1;
+  P.xp += correct ? 15 : 3;
+  P.daily = { date: today, streak: streakN, doneToday: true };
+  saveProgress();
+  renderDailyResult(correct);
+  const el = document.getElementById('dailyStreakLabel');
+  if (el) el.textContent = '🔥 ' + streakN + ' jour' + (streakN>1?'s':'');
+}
+
+function startRevision(){
+  const items = (P.missedQueue||[]).map(it => {
+    const lvl = findLevelById(it.levelId);
+    return lvl ? lvl.modules[it.moduleIndex] : null;
+  }).filter(Boolean);
+  if (items.length === 0) return;
+  startLevel({ id: 'revision', title: 'Révision des erreurs', subtitle: 'Reprenons ce qui a résisté', color: '#B85C5C', modules: items });
+}
+
+const LOGO_TAPS_NEEDED = 5;
+const LOGO_TAP_WINDOW_MS = 3000;
+
+function logoTap(){
+  const now = Date.now();
+  S.logoTapCount = (now - S.logoTapLast < LOGO_TAP_WINDOW_MS) ? S.logoTapCount + 1 : 1;
+  S.logoTapLast = now;
+
+  const mark = document.getElementById('logoTapMark');
+  const sub = document.getElementById('logoTapSub');
+  if (mark) {
+    mark.style.transition = 'transform 0.12s ease';
+    mark.style.transform = 'scale(1.25)';
+    setTimeout(() => { mark.style.transform = 'scale(1)'; }, 120);
+  }
+  if (sub) {
+    if (S.logoTapCount >= 2 && S.logoTapCount < LOGO_TAPS_NEEDED) {
+      sub.textContent = `🔓 encore ${LOGO_TAPS_NEEDED - S.logoTapCount}…`;
+      clearTimeout(S._logoHintTimer);
+      S._logoHintTimer = setTimeout(() => render(), 2200);
+    }
+  }
+
+  if (S.logoTapCount >= LOGO_TAPS_NEEDED) {
+    S.logoTapCount = 0;
+    setView('admin');
+  }
+}
+
+/* ============================ RENDER — CŒUR ============================ */
+
+function render(){
+  const app = document.getElementById('app');
+  app.setAttribute('data-theme', P.theme === 'light' ? 'light' : 'dark');
+  app.style.setProperty('--app-font', getFontCss(P.font));
+
+  if (S.view === 'splash') { app.innerHTML = renderSplash(); attachSplashHandlers(); return; }
+
+  app.innerHTML = renderHeader() + '<div class="fq-body" id="fqBody">' + renderBody() + '</div>' + renderFooter();
+  attachGlobalHandlers();
+  attachViewHandlers();
+}
+
+function renderSplash(){
+  return `
+    <div class="fq-splash">
+      <div class="fq-splash-logo">FQ</div>
+      <div style="font-size:26px;font-weight:bold;margin-bottom:6px;">Finance Quest</div>
+      <div style="font-size:13px;color:var(--dim);font-style:italic;margin-bottom:26px;">Du lambda au grand livre de la finance</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:30px;">
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--soft);">🎓 Leçons guidées, comme un prof particulier</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--soft);">🏆 Niveaux, ligues, défis et badges</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12px;color:var(--soft);">🧮 Formules, glossaire et fiches de révision</div>
+      </div>
+      <button id="splashStartBtn" class="fq-btn-primary" style="width:auto;padding:13px 28px;">▶️ Entrer dans l'application</button>
+    </div>`;
+}
+function attachSplashHandlers(){
+  document.getElementById('splashStartBtn').onclick = () => { S.view = 'map'; render(); };
+}
+
+function renderHeader(){
+  const league = getLeague(P.xp);
+  const badge = [...BADGES].reverse().find(b => Object.keys(P.completed).length >= b.threshold);
+  const tabs = [
+    ['map','🏆','Parcours'],['formulas','🧮','Formules'],['glossary','🔎','Glossaire'],
+    ['flashcards','🗂️','Cartes'],['revision','🔁','Révision'],['progression','📊','Progrès'],['news','📰','Actu']
+  ];
+  return `
+    <div class="fq-header">
+      <div class="fq-header-top">
+        <div class="fq-brand" id="logoTapZone">
+          <span class="fq-brand-mark" id="logoTapMark">${esc(P.profile.avatar || 'FQ')}</span>
+          <div>
+            <div class="fq-brand-name">${esc(P.profile.pseudo || 'Finance Quest')}</div>
+            <div class="fq-brand-sub" id="logoTapSub">${league.icon} ${league.label} · ${P.xp} XP</div>
+          </div>
+        </div>
+        <div class="fq-header-icons">
+          <button class="fq-icon-btn ${P.chronoMode?'active':''}" data-action="toggleChrono" title="Mode chrono">⚡</button>
+          <button class="fq-icon-btn" data-action="toggleMuted" title="Son">${P.muted?'🔇':'🔊'}</button>
+          <button class="fq-icon-btn" data-action="toggleTheme" title="Thème">${P.theme==='dark'?'☀️':'🌙'}</button>
+          <button class="fq-icon-btn ${S.view==='settings'?'active':''}" data-action="setView" data-view="settings" title="Réglages">⚙️</button>
+        </div>
+      </div>
+      <nav class="fq-nav">
+        ${tabs.map(([v,icon,label]) => `<button class="fq-navbtn ${S.view===v?'active':''}" data-action="setView" data-view="${v}">${icon} ${label}</button>`).join('')}
+      </nav>
+    </div>`;
+}
+
+function renderFooter(){
+  return `<div class="fq-footer"><button class="fq-reset-link" data-action="resetProgress">Réinitialiser ma progression</button></div>`;
+}
+
+function renderBody(){
+  switch (S.view) {
+    case 'map': return renderMap();
+    case 'quiz': return renderQuiz();
+    case 'result': return renderResult();
+    case 'formulas': return renderFormulas();
+    case 'glossary': return renderGlossary();
+    case 'flashcards': return renderFlashcards();
+    case 'progression': return renderProgression();
+    case 'revision': return renderRevision();
+    case 'settings': return renderSettings();
+    case 'admin': return renderAdmin();
+    case 'news': return renderNews();
+    default: return renderMap();
+  }
+}
+
+/* ============================ MAP ============================ */
+
+function renderMap(){
+  if (!P.profile.pseudo) return renderOnboarding();
+
+  const groupsUnlocked = [0,1,2,3].filter(g => [g*3,g*3+1,g*3+2].every(id => P.completed[id]?.passed));
+  const interviewUnlocked = !!P.completed[8]?.passed;
+  const allPassed = LEVELS.every(l => P.completed[l.id]?.passed);
+
+  let html = renderDailyChallenge();
+  html += `<div class="fq-intro">📘 <p>Chaque niveau enseigne d'abord, puis vérifie avec une question. Réussis un niveau (60%+) pour débloquer le suivant.</p></div>`;
+  html += `<div>`;
+  LEVELS.forEach((lvl, idx) => {
+    const locked = idx >= P.unlocked;
+    const info = P.completed[lvl.id];
+    const icon = locked ? '🔒' : (info?.passed ? '✓' : LEVEL_ICONS[idx]);
+    html += `
+      <button class="fq-level" ${locked?'disabled':''} data-action="startLevel" data-kind="level" data-id="${idx}" style="border-color:${locked?'var(--border)':lvl.color}; opacity:${locked?0.5:1};">
+        <div class="fq-level-num" style="background:${locked?'var(--border)':lvl.color};">${icon}</div>
+        <div style="flex:1;">
+          <div class="fq-level-title">${esc(lvl.title)}</div>
+          <div class="fq-level-sub">${esc(lvl.subtitle)}</div>
+        </div>
+        ${info ? `<div class="fq-level-score">${info.score}/${info.total}</div>` : ''}
+        ${!locked ? '<span style="color:var(--dim);">›</span>' : ''}
+      </button>`;
+  });
+  html += `</div>`;
+
+  if (groupsUnlocked.length > 0) {
+    html += `<div style="margin-top:16px;"><div class="fq-cat-title">Examens de synthèse</div>`;
+    groupsUnlocked.forEach(g => {
+      const quiz = buildSynthesisQuiz(LEVELS, g);
+      html += `<button class="fq-level" data-action="startLevel" data-kind="synth" data-id="${g}" style="border-color:${quiz.color};">
+        🏅 <div style="flex:1;"><div class="fq-level-title">${esc(quiz.title)}</div><div class="fq-level-sub">${esc(quiz.subtitle)}</div></div>›</button>`;
+    });
+    html += `</div>`;
+  }
+  if (interviewUnlocked) {
+    html += `<div style="margin-top:16px;"><div class="fq-cat-title">Mode pro</div>`;
+    html += `<button class="fq-level" data-action="startLevel" data-kind="interview" style="border-color:${INTERVIEW_LEVEL.color};">
+      💼 <div style="flex:1;"><div class="fq-level-title">${esc(INTERVIEW_LEVEL.title)}</div><div class="fq-level-sub">${esc(INTERVIEW_LEVEL.subtitle)}</div></div>›</button>`;
+    if (allPassed) {
+      html += `<button class="fq-level" data-action="startLevel" data-kind="case" style="border-color:${CASE_STUDY_LEVEL.color};">
+        📁 <div style="flex:1;"><div class="fq-level-title">${esc(CASE_STUDY_LEVEL.title)}</div><div class="fq-level-sub">${esc(CASE_STUDY_LEVEL.subtitle)}</div></div>›</button>`;
+    }
+    html += `</div>`;
+  }
+  return html;
+}
+
+function renderOnboarding(){
+  return `
+    <div class="fq-card">
+      <div style="font-size:17px;font-weight:bold;margin-bottom:4px;">${getGreeting()} 👋</div>
+      <div style="font-size:12px;color:var(--dim);margin-bottom:12px;">Comment veux-tu qu'on t'appelle sur ton parcours ?</div>
+      <input id="pseudoInput" class="fq-input" placeholder="Ton prénom ou pseudo" maxlength="20">
+      <div class="fq-avatar-row">
+        ${AVATARS.map((a,i) => `<button type="button" class="fq-avatar-btn ${i===0?'active':''}" data-avatar="${a}" data-action="pickAvatar">${a}</button>`).join('')}
+      </div>
+      <button class="fq-btn-primary" data-action="saveProfile">Commencer l'aventure ›</button>
+    </div>`;
+}
+
+function renderDailyChallenge(){
+  const today = todayStr();
+  const alreadyDone = P.daily.date === today && P.daily.doneToday;
+  const pool = LEVELS.slice(0, P.unlocked).flatMap(l => l.modules);
+  if (pool.length === 0) return '';
+  const idx = hashStr(today) % pool.length;
+  const q = pool[idx];
+  let inner;
+  if (alreadyDone) {
+    inner = `<div style="font-size:12px;color:var(--dim);font-style:italic;">Défi relevé pour aujourd'hui — reviens demain pour continuer ta série !</div>`;
+  } else {
+    inner = `
+      <div style="font-size:13px;margin-bottom:10px;line-height:1.4;">${esc(q.q)}</div>
+      <div class="fq-answers" id="dailyAnswers">
+        ${q.a.map((opt,i) => `<button class="fq-answer" data-action="dailyAnswer" data-i="${i}" data-correct="${q.correct}">${esc(opt)}</button>`).join('')}
+      </div>
+      <div id="dailyResultMsg" style="font-size:11px;color:var(--dim);margin-top:8px;font-style:italic;"></div>`;
+  }
+  return `
+    <div class="fq-daily">
+      <div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:bold;margin-bottom:10px;">
+        🔥 Défi du jour <span id="dailyStreakLabel" style="margin-left:auto;font-size:11px;color:var(--dim);font-weight:normal;">🔥 ${P.daily.streak} jour${P.daily.streak>1?'s':''}</span>
+      </div>
+      ${inner}
+    </div>`;
+}
+function renderDailyResult(correct){
+  const el = document.getElementById('dailyResultMsg');
+  if (el) el.textContent = correct ? '+15 XP — bien joué !' : '+3 XP quand même, reviens demain pour ta série.';
+  document.querySelectorAll('#dailyAnswers .fq-answer').forEach(b => {
+    b.disabled = true;
+    const i = Number(b.dataset.i), c = Number(b.dataset.correct);
+    if (i === c) b.classList.add('correct');
+  });
+}
+
+/* ============================ QUIZ ============================ */
+
+function renderQuiz(){
+  const level = S.activeLevel;
+  const m = level.modules[S.mIndex];
+  const pct = (S.mIndex / level.modules.length) * 100;
+  const isCorrect = S.selected === m.correct;
+  const outOfLives = S.lives <= 0 && S.stage === 'explain' && !isCorrect;
+
+  let livesHtml = '<div class="fq-lives">';
+  for (let i=0;i<5;i++) livesHtml += `<span style="color:${i<S.lives?'#B85C5C':'var(--border)'};">${i<S.lives?'❤️':'🖤'}</span>`;
+  livesHtml += '</div>';
+
+  let html = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;gap:8px;">
+      <button data-action="quitToMap" style="display:flex;align-items:center;gap:4px;background:transparent;border:none;color:var(--dim);font-size:12px;cursor:pointer;">✕ Quitter</button>
+      ${livesHtml}
+      ${S.streak>=2 ? `<div style="display:flex;align-items:center;gap:4px;font-size:11px;color:#F59E0B;">🔥 ${S.streak}</div>` : ''}
+    </div>
+    <div class="fq-progress-track"><div class="fq-progress-fill" style="width:${pct}%;background:${level.color};"></div></div>
+    <div style="font-size:11px;color:var(--dim);margin:8px 0 12px;font-style:italic;">${esc(level.title)} · ${S.mIndex+1}/${level.modules.length}</div>`;
+
+  if (S.stage === 'lesson') {
+    html += `
+      <div class="fq-card">
+        <div style="display:flex;align-items:center;gap:6px;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--dim);margin-bottom:10px;">🎓 Leçon — ton professeur particulier</div>
+        <div id="lessonText" style="font-size:13.5px;line-height:1.65;color:var(--soft);min-height:90px;white-space:pre-line;cursor:pointer;"></div>
+        <button id="lessonContinueBtn" class="fq-btn-primary" style="background:${level.color};opacity:.4;cursor:not-allowed;" disabled data-action="goToQuestion">J'ai compris, passer à la question ›</button>
+      </div>`;
+  } else {
+    html += `<div class="fq-card">`;
+    if (P.chronoMode && S.stage === 'question' && S.timeLeft !== null) {
+      html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:10px;">⚡<div style="flex:1;height:4px;background:var(--border);border-radius:2px;overflow:hidden;"><div id="chronoFill" style="height:100%;background:#F59E0B;width:${(S.timeLeft/20*100)}%;"></div></div><span id="chronoNum" style="font-size:10px;color:var(--dim);font-family:monospace;">${S.timeLeft}s</span></div>`;
+    }
+    html += `<div style="font-size:15px;line-height:1.5;margin-bottom:14px;">${esc(m.q)}</div><div class="fq-answers">`;
+    m.a.forEach((opt, i) => {
+      let cls = 'fq-answer';
+      if (S.selected !== null) {
+        if (i === m.correct) cls += ' correct';
+        else if (i === S.selected) cls += ' wrong';
+      }
+      html += `<button class="${cls}" ${S.selected!==null?'disabled':''} data-action="answer" data-i="${i}">${esc(opt)} ${S.selected!==null && i===m.correct?'✓':''}${S.selected!==null && i===S.selected && i!==m.correct?'✗':''}</button>`;
+    });
+    html += `</div>`;
+
+    if (S.stage === 'explain') {
+      html += `<div style="font-size:12px;font-weight:bold;margin-top:14px;color:${isCorrect?'#8AA876':'#D08080'};">${isCorrect?'✓ Bonne réponse':(S.selected===-1?'⏱ Temps écoulé':'✗ Pas tout à fait')}</div>`;
+      html += `<div style="display:flex;gap:8px;align-items:flex-start;margin-top:8px;font-size:12px;color:var(--soft);line-height:1.6;">🎓 <span>${esc(isCorrect ? m.explanationCorrect : m.explanationWrong)}</span></div>`;
+
+      if (isCorrect) {
+        html += `<button class="fq-btn-primary" style="background:${level.color};" data-action="nextModule">${S.mIndex===level.modules.length-1?'Voir le résultat':'Leçon suivante'} ›</button>`;
+      } else if (outOfLives) {
+        html += `<div style="text-align:center;margin-top:10px;">
+          <div style="font-size:13px;font-weight:bold;color:#B85C5C;">Plus de vies pour ce niveau</div>
+          <div style="font-size:11px;color:var(--dim);margin:4px 0;">Pas grave — reprends depuis les leçons, ça va se fixer.</div>
+          <button class="fq-btn-primary" style="background:${level.color};" data-action="restartLevel">↻ Recommencer le niveau</button>
+        </div>`;
+      } else {
+        if (S.attempts >= 2) {
+          html += `<div style="font-size:11px;color:var(--dim);font-style:italic;line-height:1.5;margin-top:10px;border-left:2px solid var(--gold);padding-left:8px;">Cette notion résiste un peu — relis la leçon tranquillement, l'exemple concret aide souvent à faire "clic".</div>`;
+        }
+        html += `<div style="display:flex;gap:8px;margin-top:14px;">
+          <button class="fq-btn-secondary" data-action="reviewLesson">📘 Revoir la leçon</button>
+          <button class="fq-btn-primary" style="background:${level.color};margin-top:0;flex:1;" data-action="retryQuestion">↻ Réessayer</button>
+        </div>`;
+      }
+    }
+    html += `</div>`;
+  }
+  return html;
+}
+
+function renderResult(){
+  const level = S.activeLevel;
+  const info = P.completed[level.id];
+  const score = info?.score ?? S.sessionScore;
+  const total = level.modules.length;
+  const passed = info?.passed;
+  const pct = Math.round((score/total)*100);
+  return `
+    <div style="padding:14px 0;display:flex;flex-direction:column;align-items:center;text-align:center;">
+      <div style="width:110px;height:110px;border-radius:50%;border:3px solid ${level.color};display:flex;flex-direction:column;align-items:center;justify-content:center;margin-bottom:16px;">
+        <div style="font-size:24px;font-weight:bold;font-family:monospace;">${pct}%</div>
+        <div style="font-size:11px;color:var(--dim);">${score}/${total}</div>
+      </div>
+      <div style="font-size:17px;font-weight:bold;margin-bottom:6px;">${passed?'Niveau validé !':'Pas encore validé'}</div>
+      <div style="font-size:12px;color:var(--dim);line-height:1.5;margin-bottom:20px;max-width:320px;">
+        ${passed ? "Le niveau suivant est débloqué. Continue sur ta lancée." : `Il faut au moins 60% pour débloquer la suite de "${esc(level.title)}". Relis bien les leçons et retente ta chance.`}
+      </div>
+      <div style="display:flex;gap:8px;width:100%;">
+        <button class="fq-btn-secondary" data-action="restartLevel">↻ Recommencer</button>
+        <button class="fq-btn-primary" style="background:${level.color};margin-top:0;" data-action="setView" data-view="map">Retour au parcours ›</button>
+      </div>
+    </div>`;
+}
+
+function startTypingLesson(){
+  const level = S.activeLevel;
+  const m = level.modules[S.mIndex];
+  const text = m.lesson;
+  clearInterval(S.typeTimerId);
+  const el = document.getElementById('lessonText');
+  const btn = document.getElementById('lessonContinueBtn');
+  if (!el) return;
+  let idx = 0;
+  el.textContent = '';
+  const finish = () => {
+    clearInterval(S.typeTimerId);
+    el.textContent = text;
+    S.lessonDone = true;
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
+  };
+  el.onclick = finish;
+  S.typeTimerId = setInterval(() => {
+    idx += 2;
+    el.textContent = text.slice(0, idx);
+    if (idx >= text.length) finish();
+  }, 16);
+}
+
+/* ============================ FORMULES / GLOSSAIRE / CARTES ============================ */
+
+function renderFormulas(){
+  const cats = [...new Set(FORMULAS.map(f=>f.cat))];
+  let html = `<div class="fq-intro">🧮 <p>Le classeur de formules.</p></div>`;
+  cats.forEach(cat => {
+    html += `<div class="fq-cat-title">${esc(cat)}</div>`;
+    FORMULAS.filter(f=>f.cat===cat).forEach(f => {
+      html += `<div class="fq-formula-row"><div class="fq-formula-name">${esc(f.name)}</div><div class="fq-formula-expr">${esc(f.formula)}</div></div>`;
+    });
+  });
+  return html;
+}
+
+function renderGlossary(){
+  return `
+    <div class="fq-intro">🔎 <p>Cherche un terme financier pour sa définition simple.</p></div>
+    <input id="glossarySearch" class="fq-input" placeholder="Rechercher un terme…" value="${esc(S.glossaryQuery)}">
+    <div id="glossaryList">${glossaryListHtml()}</div>`;
+}
+function glossaryListHtml(){
+  const q = S.glossaryQuery.toLowerCase();
+  const filtered = GLOSSARY.filter(g => g.term.toLowerCase().includes(q));
+  if (filtered.length === 0) return `<div style="font-size:12px;color:var(--dim);font-style:italic;text-align:center;padding:20px 0;">Aucun terme trouvé.</div>`;
+  return filtered.map(g => `<div class="fq-glossary-row"><div style="font-size:13px;font-weight:bold;color:var(--gold);margin-bottom:3px;">${esc(g.term)}</div><div style="font-size:12px;color:var(--soft);line-height:1.4;">${esc(g.def)}</div></div>`).join('');
+}
+
+function renderFlashcards(){
+  const cards = [
+    ...FORMULAS.map(f => ({ front: f.name, back: f.formula, tag: f.cat })),
+    ...GLOSSARY.map(g => ({ front: g.term, back: g.def, tag: 'Glossaire' })),
+  ];
+  const card = cards[S.flashIdx % cards.length];
+  return `
+    <div class="fq-intro">🗂️ <p>Tape la carte pour la retourner.</p></div>
+    <div style="font-size:11px;color:var(--dim);text-align:center;margin-bottom:10px;">${(S.flashIdx%cards.length)+1} / ${cards.length} · ${esc(card.tag)}</div>
+    <div class="fq-flash" id="flashCard" data-action="flipFlash">
+      <div style="font-size:15px;font-weight:bold;line-height:1.5;">${S.flashFlipped ? esc(card.back) : esc(card.front)}</div>
+      <div style="font-size:10px;color:var(--dim);margin-top:10px;font-style:italic;">${S.flashFlipped ? '' : 'toucher pour révéler'}</div>
+    </div>
+    <div style="display:flex;justify-content:center;gap:10px;margin-top:14px;">
+      <button class="fq-btn-secondary" style="flex:0;padding:11px 16px;" data-action="flashNav" data-dir="-1">‹</button>
+      <button class="fq-btn-secondary" style="flex:0;padding:11px 16px;" data-action="flashNav" data-dir="1">›</button>
+    </div>`;
+}
+
+/* ============================ PROGRESSION / RÉVISION ============================ */
+
+function renderProgression(){
+  const league = getLeague(P.xp);
+  const data = LEVELS.map(l => ({
+    name: l.title.length > 8 ? l.title.slice(0,7)+'…' : l.title,
+    pct: P.completed[l.id] ? Math.round((P.completed[l.id].score/P.completed[l.id].total)*100) : 0,
+  }));
+  const done = data.filter(d => d.pct > 0);
+  const weakest = done.length ? [...done].sort((a,b)=>a.pct-b.pct)[0] : null;
+  const strongest = done.length ? [...done].sort((a,b)=>b.pct-a.pct)[0] : null;
+  const maxPct = Math.max(...data.map(d=>d.pct), 10);
+
+  let chart = `<div class="fq-chart">`;
+  data.forEach(d => {
+    chart += `<div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="width:100%;display:flex;align-items:flex-end;height:100px;">
+        <div class="fq-chart-bar" style="height:${(d.pct/maxPct)*100}%;"></div>
+      </div>
+      <div class="fq-chart-label">${esc(d.name)}</div>
+    </div>`;
+  });
+  chart += `</div>`;
+
+  return `
+    <div class="fq-intro">📊 <p>Ta progression, niveau par niveau.</p></div>
+    <div class="fq-card" style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      <span style="font-size:24px;">${league.icon}</span>
+      <div><div class="fq-level-title">Ligue ${league.label}</div><div class="fq-level-sub">${P.xp} XP au total · série de ${P.daily.streak} jour${P.daily.streak>1?'s':''}</div></div>
+    </div>
+    <div class="fq-card" style="margin-bottom:12px;">${chart}</div>
+    ${strongest ? `<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--soft);margin-bottom:8px;">🏅 Point fort : <b>${esc(strongest.name)}</b> (${strongest.pct}%)</div>` : ''}
+    ${weakest && weakest.pct<80 ? `<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--soft);margin-bottom:8px;">🔁 À retravailler : <b>${esc(weakest.name)}</b> (${weakest.pct}%)</div>` : ''}
+  `;
+}
+
+function renderRevision(){
+  const count = (P.missedQueue||[]).length;
+  if (count === 0) {
+    return `<div class="fq-intro">🔁 <p>Les questions ratées reviennent ici pour être fixées.</p></div>
+      <div style="font-size:12px;color:var(--dim);font-style:italic;text-align:center;padding:20px 0;">Aucune erreur en attente — beau travail !</div>`;
+  }
+  return `
+    <div class="fq-intro">🔁 <p>Les questions ratées reviennent ici pour être fixées.</p></div>
+    <div class="fq-card">
+      <div class="fq-level-title">${count} question${count>1?'s':''} à revoir</div>
+      <div class="fq-level-sub">Une petite session ciblée pour bien ancrer ces notions.</div>
+      <button class="fq-btn-primary" data-action="startLevel" data-kind="revision">Réviser mes erreurs ›</button>
+    </div>`;
+}
+
+/* ============================ RÉGLAGES ============================ */
+
+function renderSettings(){
+  return `
+    <div class="fq-intro">⚙️ <p>Personnalise l'application à ta façon.</p></div>
+    <div class="fq-card" style="margin-bottom:14px;">
+      <div class="fq-cat-title" style="margin-top:0;">Apparence</div>
+      <div class="fq-toggle-row"><span>Thème ${P.theme==='dark'?'sombre':'clair'}</span>
+        <button class="fq-btn-secondary" style="flex:0;padding:7px 10px;font-size:11px;" data-action="toggleTheme">${P.theme==='dark'?'☀️ Passer au clair':'🌙 Passer au sombre'}</button>
+      </div>
+    </div>
+    <div class="fq-card" style="margin-bottom:14px;">
+      <div class="fq-cat-title" style="margin-top:0;">Police d'écriture</div>
+      <div class="fq-font-grid">
+        ${FONT_OPTIONS.map(f => `<button class="fq-font-btn ${P.font===f.id?'active':''}" style="font-family:${f.css};" data-action="setFont" data-font="${f.id}">
+          <span style="font-size:20px;">Aa</span><span style="font-size:11px;">${esc(f.label)}</span>
+        </button>`).join('')}
+      </div>
+    </div>
+    <div class="fq-card">
+      <div class="fq-cat-title" style="margin-top:0;">Son & rythme</div>
+      <div class="fq-toggle-row"><span>Effets sonores</span>
+        <button class="fq-btn-secondary" style="flex:0;padding:7px 10px;font-size:11px;" data-action="toggleMuted">${P.muted?'🔊 Réactiver':'🔇 Couper le son'}</button>
+      </div>
+      <div class="fq-toggle-row"><span>Mode chrono (20s/question)</span>
+        <button class="fq-btn-secondary" style="flex:0;padding:7px 10px;font-size:11px;" data-action="toggleChrono">⚡ ${P.chronoMode?'Désactiver':'Activer'}</button>
+      </div>
+    </div>`;
+}
+
+/* ============================ ADMIN (local à cet appareil) ============================ */
+
+function renderAdmin(){
+  const visits = P.visits || {};
+  const pseudos = Object.keys(visits);
+  const totalUsers = pseudos.length;
+  const returning = pseudos.filter(p => visits[p].length > 1).length;
+  const byDay = {};
+  pseudos.forEach(p => visits[p].forEach(d => { byDay[d] = (byDay[d]||0)+1; }));
+  const days = Object.keys(byDay).sort().slice(-7);
+  const maxV = Math.max(...days.map(d=>byDay[d]), 1);
+
+  let chart = `<div class="fq-chart">`;
+  days.forEach(d => {
+    chart += `<div style="flex:1;display:flex;flex-direction:column;align-items:center;">
+      <div style="width:100%;display:flex;align-items:flex-end;height:100px;"><div class="fq-chart-bar" style="height:${(byDay[d]/maxV)*100}%;"></div></div>
+      <div class="fq-chart-label">${d.slice(5)}</div>
+    </div>`;
+  });
+  chart += `</div>`;
+
+  let userRows = pseudos.sort((a,b)=>visits[b].length-visits[a].length)
+    .map(p => `<div class="fq-formula-row"><div class="fq-formula-name">${esc(p)}</div><div class="fq-formula-expr">${visits[p].length} jour${visits[p].length>1?'s':''}</div></div>`).join('');
+
+  return `
+    <div class="fq-intro">📊 <p>Fréquentation locale à cet appareil.</p></div>
+    <div style="font-size:11px;color:var(--dim);background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:14px;line-height:1.5;">
+      ⚠️ Cette version autonome (fichier HTML) n'a pas de serveur central : ces statistiques ne comptent que les profils créés <b>sur ce navigateur/appareil précis</b>. Pour suivre plusieurs testeurs sur leurs propres appareils, il faudrait un vrai backend partagé.
+    </div>
+    <div class="fq-card" style="display:flex;align-items:center;gap:10px;margin-bottom:14px;">
+      👥 <div><div class="fq-level-title">${totalUsers} profil${totalUsers>1?'s':''} sur cet appareil</div><div class="fq-level-sub">${returning} revenu${returning>1?'s':''} au moins un 2ᵉ jour</div></div>
+    </div>
+    <div class="fq-card" style="margin-bottom:12px;">${days.length ? chart : '<div style="font-size:12px;color:var(--dim);text-align:center;">Pas encore de données.</div>'}</div>
+    <div class="fq-cat-title">Détail</div>
+    ${userRows || "<div style=\"font-size:12px;color:var(--dim);font-style:italic;text-align:center;padding:10px 0;\">Aucune visite enregistrée pour l'instant.</div>"}
+    <button class="fq-btn-secondary" style="margin-top:16px;" data-action="setView" data-view="map">Retour au parcours</button>`;
+}
+
+/* ============================ ACTUALITÉS ============================ */
+
+function renderNews(){
+  const allComplete = Object.keys(P.completed).filter(k => P.completed[k].passed).length >= LEVELS.length;
+  let html = `<div class="fq-intro">📰 <p>Suivi des marchés en continu</p></div>`;
+  if (!allComplete) {
+    html += `<div class="fq-card" style="display:flex;gap:10px;margin-bottom:14px;">🔒
+      <div><div style="font-size:13px;font-weight:bold;">Débloqué au niveau 11 terminé</div>
+      <div style="font-size:11px;color:var(--dim);line-height:1.5;">Termine d'abord tout le parcours — l'actu n'a de sens que si tu peux déjà l'analyser toi-même.</div></div></div>`;
+  }
+  html += `<div style="opacity:${allComplete?1:0.35};pointer-events:${allComplete?'auto':'none'};">`;
+  NEWS_SAMPLE.forEach(n => {
+    html += `<div class="fq-card" style="margin-bottom:8px;">
+      <span style="font-size:10px;color:var(--gold);font-family:monospace;text-transform:uppercase;">${esc(n.tag)}</span>
+      <p style="font-size:12px;color:var(--soft);margin-top:4px;line-height:1.5;">${esc(n.text)}</p>
+      <div style="display:flex;gap:6px;align-items:flex-start;margin-top:8px;font-size:11px;color:var(--dim);line-height:1.5;font-style:italic;">🎓 <span>${esc(n.explain)}</span></div>
+    </div>`;
+  });
+  html += `<div style="font-size:11px;color:var(--dim);font-style:italic;line-height:1.5;margin-top:8px;">Note honnête : ce flux est illustratif dans cette maquette.</div></div>`;
+  return html;
+}
+
+/* ============================ ÉVÉNEMENTS ============================ */
+
+function attachGlobalHandlers(){
+  const logo = document.getElementById('logoTapZone');
+  if (logo) logo.onclick = logoTap;
+
+  document.querySelectorAll('[data-action]').forEach(el => {
+    const action = el.dataset.action;
+    if (el._bound) return;
+    el._bound = true;
+    el.addEventListener('click', (e) => {
+      switch (action) {
+        case 'setView': setView(el.dataset.view); break;
+        case 'toggleChrono': toggleChrono(); break;
+        case 'toggleMuted': toggleMuted(); break;
+        case 'toggleTheme': toggleTheme(); break;
+        case 'resetProgress': resetProgress(); break;
+        case 'startLevel': startLevelById(el.dataset.kind, el.dataset.id); break;
+        case 'pickAvatar': pickAvatar(el.dataset.avatar); break;
+        case 'saveProfile': saveProfile(); break;
+        case 'quitToMap': quitToMap(); break;
+        case 'goToQuestion': goToQuestion(); break;
+        case 'answer': answer(Number(el.dataset.i)); break;
+        case 'nextModule': nextModule(); break;
+        case 'restartLevel': restartLevel(); break;
+        case 'reviewLesson': reviewLesson(); break;
+        case 'retryQuestion': retryQuestion(); break;
+        case 'setFont': setFont(el.dataset.font); break;
+        case 'flipFlash': S.flashFlipped = !S.flashFlipped; render(); break;
+        case 'flashNav': S.flashFlipped = false; S.flashIdx = (S.flashIdx + Number(el.dataset.dir) + 999999) % 999999; render(); break;
+        case 'dailyAnswer': {
+          const i = Number(el.dataset.i), c = Number(el.dataset.correct);
+          completeDailyChallenge(i === c, i);
+          break;
+        }
+      }
+    });
+  });
+}
+
+function attachViewHandlers(){
+  if (S.view === 'quiz' && S.stage === 'lesson') startTypingLesson();
+  if (S.view === 'glossary') {
+    const input = document.getElementById('glossarySearch');
+    if (input) {
+      input.focus();
+      input.selectionStart = input.selectionEnd = input.value.length;
+      input.oninput = (e) => {
+        S.glossaryQuery = e.target.value;
+        document.getElementById('glossaryList').innerHTML = glossaryListHtml();
+      };
+    }
+  }
+}
+
+/* ============================ INITIALISATION ============================ */
+render();
+</script>
+</body>
+</html>
