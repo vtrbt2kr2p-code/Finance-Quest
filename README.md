@@ -1,4 +1,4 @@
-# Finance Quest 🏆
+# Finara 🏆
 
 Application ludique pour apprendre la finance, niveau par niveau — comme un jeu.
 
