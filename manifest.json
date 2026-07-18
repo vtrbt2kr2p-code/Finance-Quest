@@ -1,6 +1,6 @@
 {
-  "name": "Finance Quest",
-  "short_name": "Finance Quest",
+  "name": "Finara",
+  "short_name": "Finara",
   "description": "Apprends la finance niveau par niveau, comme un jeu.",
   "start_url": "./index.html",
   "display": "standalone",
